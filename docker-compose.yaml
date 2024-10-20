@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  web:
+    container_name: atom_chat
+    restart: on-failure
+    command: bash -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ./src/:/project/src/
+    env_file:
+      - ./.dev.env
+    depends_on:
+      - db
+
+  db:
+    container_name: atom_chat_db
+    image: postgres:latest
+    restart: on-failure
+    ports:
+      - 5432:5432
+    env_file:
+      - ./.dev.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./pg-scripts:/docker-entrypoint-initdb.d
+
+  pgadmin:
+    container_name: db_admin
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    env_file:
+      - ./.dev.env
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

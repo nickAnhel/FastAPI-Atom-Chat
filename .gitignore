@@ -1,4 +1,7 @@
+.vscode
 .venv
-.env
+.dev.env
+.test.env
 .pylintrc
 __pycache__
+.pytest_cache
