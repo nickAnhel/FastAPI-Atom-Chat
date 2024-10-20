@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.users.exceptions import UsernameAlreadyExists, UserNotFound
 from src.users.repository import UserRepository
-from src.users.schemas import UserCreate, UserGet, UserUpdate
+from src.users.schemas import UserCreate, UserGet, UserGetWithPassword, UserUpdate
 from src.users.utils import get_password_hash
 from src.users.enums import UsersOrder
 
@@ -26,12 +26,42 @@ class UserService:
         except IntegrityError as exc:
             raise UsernameAlreadyExists(f"Username {data.username!r} already exists") from exc
 
-    async def get_user_by_id(self, user_id: uuid.UUID) -> UserGet:
+    async def _get_user(
+        self,
+        include_password: bool = False,
+        **filters,
+    ) -> UserGet | UserGetWithPassword:
         try:
-            user = await self._repository.get_single(user_id=user_id)
-            return UserGet.model_validate(user)
+            user = await self._repository.get_single(**filters)
         except NoResultFound as exc:
-            raise UserNotFound(f"User with id '{user_id}' not found") from exc
+            raise UserNotFound(
+                f"User with credentials {", ".join(f"{key}={value!r}" for key, value in filters.items())} not found"
+            ) from exc
+
+        if include_password:
+            return UserGetWithPassword.model_validate(user)
+
+        return UserGet.model_validate(user)
+
+    async def get_user_by_username(
+        self,
+        username: str,
+        include_password: bool = False,
+    ) -> UserGet | UserGetWithPassword:
+        return await self._get_user(
+            include_password=include_password,
+            username=username,
+        )
+
+    async def get_user_by_id(
+        self,
+        user_id: uuid.UUID,
+        include_password: bool = False,
+    ) -> UserGet | UserGetWithPassword:
+        return await self._get_user(
+            include_password=include_password,
+            user_id=user_id,
+        )
 
     async def get_users(
         self,

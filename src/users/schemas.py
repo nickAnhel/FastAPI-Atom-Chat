@@ -20,5 +20,9 @@ class UserGet(UserBase):
     username: UsernameStr
 
 
+class UserGetWithPassword(UserGet):
+    hashed_password: str
+
+
 class UserUpdate(UserBase):
     username: UsernameStr

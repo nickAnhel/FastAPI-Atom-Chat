@@ -1,4 +1,3 @@
-
 import typing
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -9,7 +8,6 @@ from src.main import app
 from src.config import settings
 from src.database import get_async_session
 from src.models import Base
-from src.users.models import UserModel
 
 
 test_engine = create_async_engine(

@@ -1,20 +1,7 @@
 from fastapi import FastAPI
 
 from src.config import settings
-
-
-def include_routes(app: FastAPI) -> None:
-    from src.users.router import router as users_router
-
-    app.include_router(users_router)
-
-
-def add_exepton_handler(app: FastAPI) -> None:
-    from src.users.exceptions import UserNotFound, UsernameAlreadyExists
-    from src.users.exc_handlers import user_not_found_handler, username_exists_handler
-
-    app.add_exception_handler(UserNotFound, user_not_found_handler)  # type: ignore
-    app.add_exception_handler(UsernameAlreadyExists, username_exists_handler)  # type: ignore
+from src.setup_app import include_routers, add_exepton_handlers
 
 
 app = FastAPI(
@@ -25,8 +12,8 @@ app = FastAPI(
 )
 
 
-include_routes(app)
-add_exepton_handler(app)
+include_routers(app)
+add_exepton_handlers(app)
 
 
 if __name__ == "__main__":
