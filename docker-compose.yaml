@@ -1,21 +1,31 @@
 version: '3.9'
 
 services:
-  web:
-    container_name: atom_chat
+  server:
+    container_name: atom_chat_server
+    build: ./server/
     restart: on-failure
     command: bash -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - 8000:8000
     volumes:
-      - .:/project/
+      - ./server/:/project/
     env_file:
-      - ./.dev.env
+      - ./server/.dev.env
     depends_on:
       - db
+
+  client:
+    container_name: atom_chat_client
+    build: ./client/
+    restart: always
+    command: bash -c "npm run dev"
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./client/atom_chat/:/app
+    depends_on:
+      - server
 
   db:
     container_name: atom_chat_db
@@ -24,7 +34,7 @@ services:
     ports:
       - 5432:5432
     env_file:
-      - ./.dev.env
+      - ./server/.dev.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./pg-scripts:/docker-entrypoint-initdb.d
@@ -35,7 +45,7 @@ services:
     ports:
       - "5050:80"
     env_file:
-      - ./.dev.env
+      - ./server/.dev.env
     depends_on:
       - db
 

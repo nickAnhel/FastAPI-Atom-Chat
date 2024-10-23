@@ -2,7 +2,7 @@ from uuid import UUID
 from typing import Any
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import status, Depends, HTTPException, Request
+from fastapi import Header, status, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
 from src.database import get_async_session
@@ -36,13 +36,13 @@ async def authenticate_user(
         )  # type: ignore
     except UserNotFound as exc:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         ) from exc
 
     if not validate_password(form_data.password, user.hashed_password):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
 
@@ -67,6 +67,14 @@ def _get_token_from_header(
     return _get_token_payload(token)
 
 
+def _get_token_from_header_ws(
+    authorization: str = Header(),
+):
+    token = authorization.split(" ")[-1]
+    print(token)
+    return _get_token_payload(token)
+
+
 def _get_token_from_cookie(
     request: Request,
 ) -> dict[str, Any]:
@@ -84,6 +92,20 @@ def _check_token_type(
             detail=f"Invalid token type: {token_payload.get('type')!r}",
         )
 
+
+async def get_current_user_ws(
+    payload: dict[str, Any] = Depends(_get_token_from_header_ws),
+    users_service: UserService = Depends(get_users_service),
+) -> UserGet:
+    _check_token_type(payload, auth_settings.access_token_type)
+
+    try:
+        return await users_service.get_user_by_id(user_id=UUID(payload.get("sub")))
+    except UserNotFound as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authorization token",
+        ) from exc
 
 async def get_current_user(
     payload: dict[str, Any] = Depends(_get_token_from_header),

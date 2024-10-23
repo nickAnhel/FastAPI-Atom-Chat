@@ -1,0 +1,27 @@
+.register {
+    height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.error {
+    color: rgb(202, 0, 0);
+    font-size: 0.8em;
+}
+
+button:hover {
+    transition: 0.1s;
+    opacity: 0.8;
+}

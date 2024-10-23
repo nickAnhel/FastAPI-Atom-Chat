@@ -4,11 +4,13 @@ from src.auth.router import router as auth_router
 from src.users.router import router as users_router
 from src.users.exceptions import UserNotFound, UsernameAlreadyExists
 from src.users.exc_handlers import user_not_found_handler, username_exists_handler
+from src.chat.router import router as chat_router
 
 
 def include_routers(app: FastAPI) -> None:
     app.include_router(users_router)
     app.include_router(auth_router)
+    app.include_router(chat_router)
 
 
 def add_exepton_handlers(app: FastAPI) -> None:

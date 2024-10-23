@@ -1,0 +1,125 @@
+#ws-id {color: #fff}
+.chat-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding: 20px;
+    height: calc(100vh - 100px);
+}
+
+.chat-list,
+.chat-window {
+    background-color: #333;
+    border-radius: 20px;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Chat list */
+
+.chat-list {
+    width: 30%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.search {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #808080;
+    gap: 10px;
+}
+
+
+.search input {
+    width: 100%;
+    font-size: 1.2em;
+    background: transparent;
+}
+
+.search button {
+    background: transparent;
+    margin: 0;
+}
+
+.search img {
+    width: 20px;
+    height: 20px;
+}
+
+.chats {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 10px;
+    overflow: auto;
+    scrollbar-width: none;
+}
+
+.chat {
+    font-size: 1.3em;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 10px;
+    transition: background-color 0.1s;
+}
+
+.chat:hover {
+    cursor: pointer;
+    background-color: #3b3b3b;
+    transition: background-color 0.1s;
+}
+
+.chat-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-label img {
+    width: 40px;
+    height: 40px;
+}
+
+.active {
+    background-color: #505050;
+}
+
+.active:hover {
+    background-color: #505050;
+}
+
+.msg-count {
+    background-color: #505050;
+    padding: 0.4em;
+    font-size: 0.9em;
+    color: #fff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.active .msg-count {
+    background-color: #808080;
+}
+
+/* Chat window */
+
+.chat-window {
+    width: 70%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}

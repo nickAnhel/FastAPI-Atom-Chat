@@ -17,6 +17,7 @@ alembic = "^1.13.3"
 bcrypt = "^4.2.0"
 pyjwt = {extras = ["crypto"], version = "^2.9.0"}
 python-multipart = "^0.0.12"
+websockets = "^13.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
