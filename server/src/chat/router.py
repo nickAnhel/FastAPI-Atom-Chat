@@ -1,8 +1,13 @@
 import uuid
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 
-from src.auth.dependencies import get_current_user_ws
+from src.auth.dependencies import get_current_user
 from src.users.schemas import UserGet
+from src.chat.dependencies import get_message_service
+from src.chat.service import MessageService
+from src.chat.schemas import MessageCreate, MessageGetWithUser, MessageCreateWS, MessageGetWS
+from src.chat.manager import ConnectionManager
+from src.chat.enums import MessageOrder
 
 
 router = APIRouter(
@@ -11,26 +16,23 @@ router = APIRouter(
 )
 
 
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: list[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
-    async def broadcast(self, message: str, *, except_for: WebSocket | None = None):
-        for connection in [ws for ws in self.active_connections if ws != except_for]:
-            await connection.send_text(message)
+@router.get("/{chat_id}/messages")
+async def get_chat(
+    chat_id: int,
+    offset: int = 0,
+    limit: int = 100,
+    user: UserGet = Depends(get_current_user),
+    service: MessageService = Depends(get_message_service),
+) -> list[MessageGetWithUser]:
+    return await service.get_list(
+        chat_id=chat_id,
+        order=MessageOrder.CREATED_AT,
+        order_desc=True,
+        offset=offset,
+        limit=limit,
+    )
 
 
-# manager = ConnectionManager()
 managers: dict[int, ConnectionManager] = {}
 
 
@@ -39,7 +41,7 @@ async def chat(
     websocket: WebSocket,
     chat_id: int,
     user_id: uuid.UUID,
-    # user: UserGet = Depends(get_current_user_ws),
+    service: MessageService = Depends(get_message_service),
 ) -> None:
     manager: ConnectionManager = managers.get(chat_id, ConnectionManager())
     managers[chat_id] = manager
@@ -49,7 +51,26 @@ async def chat(
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-            await manager.broadcast(f"{user_id}: {data}", except_for=websocket)
+            data = await websocket.receive_json()
+
+            msg = MessageCreateWS.model_validate(data)
+            message = await service.add_message(
+                MessageCreate(
+                    chat_id=chat_id,
+                    user_id=user_id,
+                    content=msg.content,
+                    created_at=msg.created_at.replace(tzinfo=None),
+                )
+            )
+
+            await manager.broadcast(
+                MessageGetWS(
+                    message_id=message.message_id,
+                    username=message.user.username,
+                    content=msg.content,
+                    created_at=msg.created_at,
+                ),
+                except_for=websocket,
+            )
     except WebSocketDisconnect:
         manager.disconnect(websocket)

@@ -6,8 +6,18 @@ import { getAccessToken } from '../../api/auth';
 import Chat from "../Chat/Chat.jsx"
 
 
+function markChatElemActive(id) {
+    document.getElementById(id).classList.add("active");
+    document.querySelectorAll(".chat").forEach((chat) => {
+        if (chat.id != id) {
+            chat.classList.remove("active");
+        }
+    });
+}
+
+
 function Main() {
-    const [chatId, setChatId] = useState(1);
+    const [chatId, setChatId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -21,6 +31,12 @@ function Main() {
         setIsLoggedInWrapper();
     }, []);
 
+
+    const openChatHandler = (id) => {
+        setChatId(id);
+        markChatElemActive(id);
+    }
+
     return (
         <>
             <div className="chat-container">
@@ -33,33 +49,25 @@ function Main() {
                     </div>
 
                     <div className="chats">
-                        <div className="chat">
+                        <div className="chat" id="1" onClick={() => openChatHandler(1)}>
                             <div className="chat-label">
                                 <img src="../../../assets/user.svg" alt="" />
-                                <div className="name">John</div>
+                                <div className="name">1</div>
                             </div>
-                            <div className="msg-count">3</div>
+                            {/* <div className="msg-count">3</div> */}
                         </div>
-                        <div className="chat active">
+                        <div className="chat" id="2" onClick={() => openChatHandler(2)}>
                             <div className="chat-label">
                                 <img src="../../../assets/user.svg" alt="" />
-                                <div className="name">Linda</div>
+                                <div className="name">2</div>
                             </div>
-                            <div className="msg-count">10</div>
+                            {/* <div className="msg-count">10</div> */}
                         </div>
-                        <div className="chat">
-                            <div className="chat-label">
-                                <img src="../../../assets/user.svg" alt="" />
-                                <div className="name">Bob</div>
-                            </div>
-                            {/* <div className="msg-count"></div> */}
-                        </div>
-
                     </div>
                 </div>
 
                 <div className="chat-window">
-                    <Chat />
+                    <Chat chatId={chatId} />
                 </div>
             </div>
         </>

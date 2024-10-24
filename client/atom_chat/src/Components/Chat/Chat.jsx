@@ -1,49 +1,93 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { getMessages } from "../../api/messages";
 import "./Chat.css"
+
+import Message from "../Message/Message";
 
 
 const userId = localStorage.getItem("user_id");
-const ws = new WebSocket(`ws://localhost:8000/chat/ws/1/${userId}`);
 
 
-function Chat() {
+function Chat({ chatId }) {
+    if (!chatId) {
+        return null;
+    }
+
+    const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState([])
+    const ws = useRef(null);
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
-        ws.onmessage = function (event) {
-            let sender = event.data.split(":")[0];
-            let msg = event.data.split(":").slice(1).join(":");
-            addMessageToChat(msg, sender);
-        };
-    })
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scroll({
+                top: messagesEndRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }, [messages]);
 
-    const addMessageToChat = (msg, sender) => {
-        let msgHtml;
-        if (sender == "you") {
-            msgHtml = `<div class="msg you"><div class="msg-label">You</div><div class="msg-text">${msg}</div></div>`;
-        } else {
-            msgHtml = `<div class="msg"><div class="msg-label">${sender}</div><div class="msg-text">${msg}</div></div>`;
+    useEffect(() => {
+        const getMessagesWrapper = async () => {
+            clearChat();
+
+            const msgs = await getMessages(chatId);
+            msgs.reverse().forEach(
+                (message) => {
+                    let sender = message.user_id == userId ? "You" : message.user.username;
+                    addMessageToChat(message.content, sender, message.created_at);
+                }
+            );
         }
 
-        const chatBody = document.querySelector(".chat-body");
-        chatBody.innerHTML += msgHtml;
-        chatBody.scrollBy({
-            top: chatBody.scrollHeight,
-            behavior: "smooth",
-        });
+        getMessagesWrapper();
+    }, [chatId, userId]);
+
+    useEffect(() => {
+        ws.current = new WebSocket(`ws://localhost:8000/chat/ws/${chatId}/${userId}`);
+
+        ws.current.onmessage = (event) => {
+            let data = JSON.parse(JSON.parse(event.data));
+            addMessageToChat(data.content, data.username, data.created_at);
+        };
+
+        return () => {
+            ws.current.close();
+        };
+    }, [chatId, userId]);
+
+    const clearChat = () => {
+        setMessages([]);
+    }
+
+    const addMessageToChat = (msg, sender, createdAt) => {
+        setMessages(messages => [...messages, {
+            content: msg,
+            username: sender,
+            createdAt: createdAt
+        }]);
     }
 
     const sendMessage = (event) => {
         document.getElementById("message-input").value = "";
         if (message != "") {
-            addMessageToChat(message, "you");
+            let now = new Date();
+            let utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+            addMessageToChat(message, "You", utc);
+
+            let msgData = {
+                content: message,
+                created_at: new Date()
+            }
+            ws.current.send(
+                JSON.stringify(msgData)
+            );
             setMessage("");
         };
     }
 
     const handleKeyDown = (event) => {
         if (event.key === 'Enter' && message != "") {
-            ws.send(message);
             sendMessage(message);
         }
     };
@@ -53,10 +97,18 @@ function Chat() {
 
             <div className="chat-header">
                 <img src="../../../assets/user.svg" alt="" />
-                <h2><span id="ws-id">{userId}</span></h2>
+                <h2><span id="ws-id">{chatId}</span></h2>
             </div>
 
-            <div className="chat-body"></div>
+            <div className="chat-body" ref={messagesEndRef}>
+                {
+                    messages.map((message, index) => {
+                        return (
+                            <Message key={index} username={message.username} content={message.content} createdAt={message.createdAt}/>
+                        )
+                    })
+                }
+            </div>
 
             <div className="chat-footer">
                 <input type="text" placeholder="Type a message" onChange={(e) => setMessage(e.target.value)} id="message-input" onKeyDown={handleKeyDown} />

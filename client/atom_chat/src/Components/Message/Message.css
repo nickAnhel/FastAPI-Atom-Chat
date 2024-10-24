@@ -1,0 +1,35 @@
+.msg {
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    font-size: 1.2em;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 10px;
+    background-color: #505050;
+    min-width: 70px;
+    max-width: 60%;
+    gap: 5px;
+}
+
+.msg .msg-label {
+    display: flex;
+    justify-content: space-between;
+    color: #bbb;
+    font-size: 0.7em;
+}
+
+.msg .msg-text {
+    font-size: 1em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.you {
+    align-self: flex-end;
+    background-color: #535bf2;
+}
+
+.you .msg-label {
+    color: #eee;
+}

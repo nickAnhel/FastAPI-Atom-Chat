@@ -36,6 +36,7 @@ class UserRepository:
 
     async def get_multi(
         self,
+        *,
         order: str,
         order_desc: bool,
         offset: int,

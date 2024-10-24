@@ -11,6 +11,7 @@ from src.config import settings
 from src.models import Base
 from src.users.models import UserModel
 from src.auth.models import RefreshTokenModel
+from src.chat.models import MessageModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
