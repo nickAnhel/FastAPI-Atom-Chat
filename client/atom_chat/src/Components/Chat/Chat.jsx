@@ -5,7 +5,6 @@ import "./Chat.css"
 import Message from "../Message/Message";
 
 
-const userId = localStorage.getItem("user_id");
 
 
 function Chat({ chatId }) {
@@ -13,10 +12,12 @@ function Chat({ chatId }) {
         return null;
     }
 
+    const userId = localStorage.getItem("user_id");
     const [messages, setMessages] = useState([]);
-    const [message, setMessage] = useState([])
+    const [message, setMessage] = useState([]);
     const ws = useRef(null);
     const messagesEndRef = useRef(null);
+
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -35,7 +36,8 @@ function Chat({ chatId }) {
             msgs.reverse().forEach(
                 (message) => {
                     let sender = message.user_id == userId ? "You" : message.user.username;
-                    addMessageToChat(message.content, sender, message.created_at);
+                    let created_at = new Date(message.created_at + "Z");
+                    addMessageToChat(message.content, sender, created_at);
                 }
             );
         }
@@ -72,8 +74,7 @@ function Chat({ chatId }) {
         document.getElementById("message-input").value = "";
         if (message != "") {
             let now = new Date();
-            let utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
-            addMessageToChat(message, "You", utc);
+            addMessageToChat(message, "You", now);
 
             let msgData = {
                 content: message,
