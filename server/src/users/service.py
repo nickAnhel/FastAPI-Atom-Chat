@@ -28,14 +28,22 @@ class UserService:
 
     async def _get_user(
         self,
-        include_password: bool = False,
+        include_password: bool,
+        exclude_deleted: bool,
+        exclude_blocked: bool,
         **filters,
     ) -> UserGet | UserGetWithPassword:
         try:
+            if exclude_blocked:
+                filters["is_blocked"] = False
+
+            if exclude_deleted:
+                filters["is_deleted"] = False
+
             user = await self._repository.get_single(**filters)
         except NoResultFound as exc:
             raise UserNotFound(
-                f"User with credentials {", ".join(f"{key}={value!r}" for key, value in filters.items())} not found"
+                f"User with credentials {", ".join(f"{key}='{value!s}'" for key, value in filters.items())} not found"
             ) from exc
 
         if include_password:
@@ -47,9 +55,13 @@ class UserService:
         self,
         username: str,
         include_password: bool = False,
+        exclude_deleted: bool = True,
+        exclude_blocked: bool = True,
     ) -> UserGet | UserGetWithPassword:
         return await self._get_user(
             include_password=include_password,
+            exclude_deleted=exclude_deleted,
+            exclude_blocked=exclude_blocked,
             username=username,
         )
 
@@ -57,9 +69,13 @@ class UserService:
         self,
         user_id: uuid.UUID,
         include_password: bool = False,
+        exclude_deleted: bool = True,
+        exclude_blocked: bool = True,
     ) -> UserGet | UserGetWithPassword:
         return await self._get_user(
             include_password=include_password,
+            exclude_deleted=exclude_deleted,
+            exclude_blocked=exclude_blocked,
             user_id=user_id,
         )
 
@@ -84,7 +100,7 @@ class UserService:
         data: UserUpdate,
     ) -> UserGet:
         try:
-            user = await self._repository.update(data=data.model_dump(), user_id=user_id)
+            user = await self._repository.update(data=data.model_dump(exclude_none=True), user_id=user_id)
             return UserGet.model_validate(user)
 
         except NoResultFound as exc:
@@ -97,7 +113,20 @@ class UserService:
         self,
         user_id: uuid.UUID,
     ) -> bool:
-        if await self._repository.delete(user_id=user_id) == 0:
-            raise UserNotFound(f"User with id '{user_id}' not found")
+        try:
+            await self._repository.mark_deleted(user_id=user_id)
+        except NoResultFound as exc:
+            raise UserNotFound(f"User with id '{user_id}' not found") from exc
+
+        return True
+
+    async def restore_user(
+        self,
+        user_id: uuid.UUID,
+    ) -> bool:
+        try:
+            await self._repository.mark_restored(user_id=user_id)
+        except NoResultFound as exc:
+            raise UserNotFound(f"User with id '{user_id}' not found") from exc
 
         return True

@@ -18,6 +18,9 @@ class UserCreate(UserBase):
 class UserGet(UserBase):
     user_id: uuid.UUID
     username: UsernameStr
+    is_deleted: bool
+    is_blocked: bool
+
 
 
 class UserGetWithPassword(UserGet):
@@ -25,4 +28,4 @@ class UserGetWithPassword(UserGet):
 
 
 class UserUpdate(UserBase):
-    username: UsernameStr
+    username: UsernameStr | None = None

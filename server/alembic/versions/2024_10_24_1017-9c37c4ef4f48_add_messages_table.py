@@ -30,6 +30,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["users.user_id"],
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("message_id"),
     )

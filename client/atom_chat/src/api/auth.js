@@ -13,6 +13,7 @@ export async function loginUser(username, password) {
         body: `grand_type=password&username=${username}&password=${password}`,
     });
     const data = await response.json();
+
     if (response.ok) {
         localStorage.setItem('access_token', data.access_token);
     }
@@ -22,7 +23,7 @@ export async function loginUser(username, password) {
         localStorage.setItem('user_id', userData.user_id);
     }
 
-    return response.ok;
+    return response.status;
 }
 
 

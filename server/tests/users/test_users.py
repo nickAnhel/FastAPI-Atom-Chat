@@ -41,14 +41,17 @@ async def test_create_user_already_exists(async_client: AsyncClient):
 
 
 # Get user tests
-async def test_get_user_by_id_success(async_client: AsyncClient):
-    response = await async_client.post(
+async def test_get_user_by_id_success(
+    async_client: AsyncClient,
+    user: dict[str, Any],
+):
+    response = await async_client.get(
         "/users/",
-        json={"username": "test2", "password": "test"},
+        params={"user_id": user["user_id"]},
+        headers={"Authorization": f"Bearer {user['access_token']}"},
     )
-    response = await async_client.get("/users/", params={"user_id": response.json()["user_id"]})
     assert response.status_code == 200
-    assert response.json()["username"] == "test2"
+    assert response.json()["username"] == user["username"]
 
 
 async def test_get_user_by_id_not_found(async_client: AsyncClient):
@@ -57,10 +60,16 @@ async def test_get_user_by_id_not_found(async_client: AsyncClient):
 
 
 # Get users tests
-async def test_get_users_success(async_client: AsyncClient):
-    response = await async_client.get("/users/list")
+async def test_get_users_success(
+    async_client: AsyncClient,
+    user: dict[str, Any],
+):
+    response = await async_client.get(
+        "/users/list",
+        headers={"Authorization": f"Bearer {user['access_token']}"},
+    )
     assert response.status_code == 200
-    assert len(response.json()) == 2
+    assert len(response.json()) == 3
 
 
 # Get current user info tests
@@ -74,7 +83,6 @@ async def test_get_current_user_info_success(
     )
     assert response.status_code == 200
     assert response.json()["username"] == user["username"]
-
 
 
 # Update user tests
@@ -121,7 +129,7 @@ async def test_delete_user_success(
     async_client: AsyncClient,
     user: dict[str, Any],
 ):
-    response = await async_client.delete(
+    response = await async_client.patch(
         "/users/",
         headers={"Authorization": f"Bearer {user['access_token']}"},
     )

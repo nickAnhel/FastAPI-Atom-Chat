@@ -52,7 +52,7 @@ export async function deleteUser() {
     const token = await getAccessToken();
     const response = await fetch(
         'http://localhost:8000/users/', {
-        method: 'DELETE',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -66,4 +66,18 @@ export async function deleteUser() {
     }
 
     return response.ok;
+}
+
+
+export async function restoreUser(username, password) {
+    const response = await fetch(
+        'http://localhost:8000/users/restore', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `grand_type=password&username=${username}&password=${password}`,
+    });
+    const result = await response.json();
+    return result;
 }

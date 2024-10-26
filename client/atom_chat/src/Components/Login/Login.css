@@ -17,9 +17,17 @@ form {
     gap: 10px;
 }
 
+.hints {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 .hint {
     font-size: 14px;
     color: #808080;
+    margin: 0;
 }
 
 button:hover {

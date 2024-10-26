@@ -6,6 +6,7 @@ import Login from './Components/Login/Login'
 import Register from './Components/Register/Register'
 import Main from './Components/Main/Main'
 import Profile from './Components/Profile/Profile'
+import Restore from './Components/Restore/Restore'
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
                 <Route path="/" element={<Main />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Register />} />
+                <Route path="/restore" element={<Restore />} />
                 <Route path="/profile" element={<Profile />} />
 
             </Routes>

@@ -50,7 +50,8 @@ function Chat({ chatId }) {
 
         ws.current.onmessage = (event) => {
             let data = JSON.parse(JSON.parse(event.data));
-            addMessageToChat(data.content, data.username, data.created_at);
+            let sender = data.user_id == userId ? "You" : message.user.username;
+            addMessageToChat(data.content, sender, data.created_at);
         };
 
         return () => {

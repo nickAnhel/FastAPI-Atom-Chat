@@ -18,7 +18,7 @@ services:
   client:
     container_name: atom_chat_client
     build: ./client/
-    restart: always
+    restart: on-failure
     command: bash -c "npm run dev"
     ports:
       - "5000:5000"

@@ -17,6 +17,7 @@ class MessageCreateWS(BaseModel):
 class MessageGetWS(MessageCreateWS):
     message_id: uuid.UUID
     username: str
+    user_id: uuid.UUID
 
 
 class MessageCreate(BaseSchema):

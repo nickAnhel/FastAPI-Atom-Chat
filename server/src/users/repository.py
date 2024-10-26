@@ -44,6 +44,10 @@ class UserRepository:
     ) -> list[UserModel]:
         query = (
             select(UserModel)
+            .filter_by(
+                is_deleted=False,
+                is_blocked=False,
+            )
             .order_by(desc(order) if order_desc else order)
             .offset(offset)
             .limit(limit)
@@ -59,6 +63,36 @@ class UserRepository:
         stmt = (
             update(UserModel)
             .values(**data)
+            .filter_by(**filters)
+            .returning(UserModel)
+        )
+
+        result = await self._session.execute(stmt)
+        await self._session.commit()
+        return result.scalar_one()
+
+    async def mark_deleted(
+        self,
+        **filters,
+    ) -> UserModel:
+        stmt = (
+            update(UserModel)
+            .values(is_deleted=True)
+            .filter_by(**filters)
+            .returning(UserModel)
+        )
+
+        result = await self._session.execute(stmt)
+        await self._session.commit()
+        return result.scalar_one()
+
+    async def mark_restored(
+        self,
+        **filters,
+    ) -> UserModel:
+        stmt = (
+            update(UserModel)
+            .values(is_deleted=False)
             .filter_by(**filters)
             .returning(UserModel)
         )

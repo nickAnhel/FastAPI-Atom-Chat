@@ -14,7 +14,7 @@ from src.auth.config import auth_settings
 from src.auth.utils import create_access_token, create_refresh_token
 from src.auth.dependencies import (
     authenticate_user,
-    get_current_user_for_refresh,
+    get_current_active_user_for_refresh,
     get_refresh_token_service,
 )
 
@@ -47,7 +47,7 @@ async def login(
 
 @router.post("/new-access-token")
 async def get_new_access_token(
-    user: UserGet = Depends(get_current_user_for_refresh),
+    user: UserGet = Depends(get_current_active_user_for_refresh),
 ) -> Token:
     access_token = create_access_token(user=user)
     return Token(access_token=access_token)
@@ -57,7 +57,7 @@ async def get_new_access_token(
 async def get_new_refresh_token(
     request: Request,
     response: Response,
-    user: UserGet = Depends(get_current_user_for_refresh),
+    user: UserGet = Depends(get_current_active_user_for_refresh),
     service: RefreshTokenService = Depends(get_refresh_token_service),
 ) -> None:
     old_refresh_token = request.cookies.get(auth_settings.refresh_token_cookie_key)

@@ -14,12 +14,21 @@ function Login() {
     const loginUserHandler = async (e) => {
         e.preventDefault();
 
-        const success = await loginUser(username, password);
-        if (!success) {
-            setError('Invalid username or password');
-        } else {
-            setError('');
-            navigate("/");
+        const status = await loginUser(username, password);
+
+        switch (status) {
+            case 401:
+                setError('Invalid username or password');
+                break;
+            case 410:
+                setError('This account has been deleted');
+                break;
+            case 403:
+                setError('This account has been blocked');
+                break;
+            default:
+                setError('');
+                navigate("/");
         }
     }
 
@@ -47,9 +56,15 @@ function Login() {
                     />
                     {error && <div style={{color: 'red'}}>{error}</div>}
                     <button type="submit">Log in</button>
-                    <p className="hint">
-                        Don't have an account? <Link to="/signup">Sign up</Link>
-                    </p>
+
+                    <div className="hints">
+                        <p className="hint">
+                            Don't have an account? <Link to="/signup">Sign up</Link>
+                        </p>
+                        <p className="hint">
+                            Want to restore deleted account? <Link to="/restore">Restore</Link>
+                        </p>
+                    </div>
                 </form>
             </div>
         </>
