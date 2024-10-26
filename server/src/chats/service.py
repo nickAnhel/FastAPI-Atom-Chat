@@ -4,7 +4,7 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from src.users.schemas import UserGet
 
 from src.chats.repository import ChatRepository
-from src.chats.schemas import ChatCreate, ChatGet
+from src.chats.schemas import ChatCreate, ChatGet, ChatUpdate
 from src.chats.enums import ChatOrder
 from src.chats.exceptions import ChatNotFound, PermissionDenied, AlreadyInChat, CantAddMembers
 
@@ -141,10 +141,23 @@ class ChatService:
 
     async def update_chat(
         self,
+        *,
+        data: ChatUpdate,
+        chat_id: uuid.UUID,
+        user_id: uuid.UUID,
     ):
-        pass
+        await self._check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
+        chat = await self._repository.update(
+            data=data.model_dump(exclude_none=True),
+            chat_id=chat_id,
+        )
+        return ChatGet.model_validate(chat)
 
     async def delete_chat(
         self,
-    ):
-        pass
+        *,
+        chat_id: uuid.UUID,
+        user_id: uuid.UUID,
+    ) -> bool:
+        await self._check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
+        return await self._repository.delete(chat_id=chat_id) == 1

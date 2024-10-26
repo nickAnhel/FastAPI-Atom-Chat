@@ -17,3 +17,7 @@ class ChatGet(BaseSchema):
     title: str
     is_private: bool
     owner_id: uuid.UUID
+
+
+class ChatUpdate(BaseSchema):
+    title: str | None = None

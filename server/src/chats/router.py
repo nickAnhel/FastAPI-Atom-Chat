@@ -10,7 +10,7 @@ from src.messages.schemas import MessageCreate, MessageCreateWS, MessageGetWS
 from src.chats.manager import ConnectionManager
 from src.chats.service import ChatService
 from src.chats.dependencies import get_chat_service
-from src.chats.schemas import ChatCreate, ChatGet
+from src.chats.schemas import ChatCreate, ChatGet, ChatUpdate
 from src.chats.enums import ChatOrder
 
 
@@ -116,6 +116,32 @@ async def remove_members_from_chat(
         user_id=user.user_id,
         chat_id=chat_id,
         members_ids=members_ids,
+    )
+
+
+@router.put("/{chat_id}")
+async def update_chat(
+    chat_id: uuid.UUID,
+    data: ChatUpdate,
+    user: UserGet = Depends(get_current_active_user),
+    service: ChatService = Depends(get_chat_service),
+) -> ChatGet:
+    return await service.update_chat(
+        data=data,
+        user_id=user.user_id,
+        chat_id=chat_id,
+    )
+
+
+@router.delete("/{chat_id}")
+async def delete_chat(
+    chat_id: uuid.UUID,
+    user: UserGet = Depends(get_current_active_user),
+    service: ChatService = Depends(get_chat_service),
+) -> bool:
+    return await service.delete_chat(
+        user_id=user.user_id,
+        chat_id=chat_id,
     )
 
 

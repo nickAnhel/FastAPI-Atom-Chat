@@ -1,6 +1,6 @@
 from typing import Any
 import uuid
-from sqlalchemy import insert, select, delete, desc
+from sqlalchemy import insert, select, update, delete, desc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -99,10 +99,29 @@ class ChatRepository:
 
     async def update(
         self,
-    ):
-        pass
+        chat_id: uuid.UUID,
+        data: dict[str, Any],
+    ) -> ChatModel:
+        stmt = (
+            update(ChatModel)
+            .values(**data)
+            .filter_by(chat_id=chat_id)
+            .returning(ChatModel)
+        )
+
+        result = await self._session.execute(stmt)
+        await self._session.commit()
+        return result.scalar_one()
 
     async def delete(
         self,
-    ):
-        pass
+        chat_id: uuid.UUID,
+    ) -> int:
+        stmt = (
+            delete(ChatModel)
+            .filter_by(chat_id=chat_id)
+        )
+
+        result = await self._session.execute(stmt)
+        await self._session.commit()
+        return result.rowcount
