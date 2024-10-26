@@ -1,6 +1,7 @@
 import uuid
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
+from src.chats.schemas import ChatGet
 from src.users.exceptions import UsernameAlreadyExists, UserNotFound
 from src.users.repository import UserRepository
 from src.users.schemas import UserCreate, UserGet, UserGetWithPassword, UserUpdate
@@ -93,6 +94,13 @@ class UserService:
             limit=limit,
         )
         return [UserGet.model_validate(user) for user in users]
+
+    async def get_joined_chats(
+        self,
+        user_id: uuid.UUID,
+    ) -> list[ChatGet]:
+        chats =  await self._repository.get_joined_chats(user_id=user_id)
+        return [ChatGet.model_validate(chat) for chat in chats]
 
     async def update_user(
         self,

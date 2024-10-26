@@ -1,6 +1,7 @@
 import uuid
 from fastapi import APIRouter, Depends, status
 
+from src.chats.schemas import ChatGet
 from src.auth.dependencies import get_current_active_user, authenticate_user_for_restore
 from src.users.service import UserService
 from src.users.dependencies import get_users_service
@@ -53,6 +54,14 @@ async def get_users(
         offset=offset,
         limit=limit,
     )
+
+
+@router.get("/chats/joined")
+async def get_joined_chats(
+    user: UserGet = Depends(get_current_active_user),
+    users_service: UserService = Depends(get_users_service),
+) -> list[ChatGet]:
+    return await users_service.get_joined_chats(user_id=user.user_id)
 
 
 @router.put("/")

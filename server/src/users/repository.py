@@ -1,7 +1,9 @@
 from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy import select, insert, update, delete, desc
 
+from src.chats.models import ChatModel
 from src.users.models import UserModel
 
 
@@ -54,6 +56,19 @@ class UserRepository:
         )
         result = await self._session.execute(query)
         return list(result.scalars().all())
+
+    async def get_joined_chats(
+        self,
+        **filters,
+    ) -> list[ChatModel]:
+        query = (
+            select(UserModel)
+            .filter_by(**filters)
+            .options(selectinload(UserModel.joined_chats))
+        )
+        result = await self._session.execute(query)
+        user = result.scalar_one()
+        return user.joined_chats
 
     async def update(
         self,

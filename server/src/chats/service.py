@@ -28,7 +28,11 @@ class ChatService:
             chat_users.extend(
                 [(chat.chat_id, member_id) for member_id in data.members],
             )
-        await self._repository.add_members(data=chat_users)
+
+        try:
+            await self._repository.add_members(data=chat_users)
+        except IntegrityError as exc:
+            raise CantAddMembers("Can't add members") from exc
 
         return ChatGet.model_validate(chat)
 
