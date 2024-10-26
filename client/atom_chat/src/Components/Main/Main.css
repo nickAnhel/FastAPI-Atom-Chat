@@ -60,42 +60,8 @@
     scrollbar-width: none;
 }
 
-.chat {
-    font-size: 1.3em;
-    font-weight: 600;
-    color: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    border-radius: 10px;
-    transition: background-color 0.1s;
-}
 
-.chat:hover {
-    cursor: pointer;
-    background-color: #3b3b3b;
-    transition: background-color 0.1s;
-}
 
-.chat-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.chat-label img {
-    width: 40px;
-    height: 40px;
-}
-
-.active {
-    background-color: #505050;
-}
-
-.active:hover {
-    background-color: #505050;
-}
 
 .msg-count {
     background-color: #505050;

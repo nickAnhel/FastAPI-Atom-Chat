@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom"
 import "./Main.css"
 
 import { getAccessToken } from '../../api/auth';
+import { getJoinedChats } from "../../api/users.js";
+
 import Chat from "../Chat/Chat.jsx"
+import ChatListItem from "../ChatListItem/ChatListItem.jsx";
 
 
 function markChatElemActive(id) {
@@ -17,7 +20,10 @@ function markChatElemActive(id) {
 
 
 function Main() {
+    const userId = localStorage.getItem("user_id");
+    const [chats, setChats] = useState([]);
     const [chatId, setChatId] = useState(null);
+    const [chatName, setChatName] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -31,9 +37,36 @@ function Main() {
         setIsLoggedInWrapper();
     }, []);
 
+    useEffect(() => {
+        const getChatsWrapper = async () => {
+            clearChatList();
 
-    const openChatHandler = (id) => {
+            const chats = await getJoinedChats(userId);
+            chats.forEach(
+                (chat) => {
+                    addChatToList(chat);
+                }
+            );
+        }
+
+        getChatsWrapper();
+    }, [userId]);
+
+    const clearChatList = () => {
+        setChats([]);
+    }
+
+    const addChatToList = (chat) => {
+        console.log(chat);
+        setChats(chats => [...chats, {
+            chatId: chat.chat_id,
+            chatName: chat.title,
+        }]);
+    }
+
+    const openChatHandler = (id, name) => {
         setChatId(id);
+        setChatName(name)
         markChatElemActive(id);
     }
 
@@ -49,25 +82,18 @@ function Main() {
                     </div>
 
                     <div className="chats">
-                        <div className="chat" id="036d17d9-ce9d-41cf-84c2-6b25133fc30a" onClick={() => openChatHandler("036d17d9-ce9d-41cf-84c2-6b25133fc30a")}>
-                            <div className="chat-label">
-                                <img src="../../../assets/user.svg" alt="" />
-                                <div className="name">1</div>
-                            </div>
-                            {/* <div className="msg-count">3</div> */}
-                        </div>
-                        <div className="chat" id="2aa90eef-9f4e-4b98-867c-4fadd4525039" onClick={() => openChatHandler("2aa90eef-9f4e-4b98-867c-4fadd4525039")}>
-                            <div className="chat-label">
-                                <img src="../../../assets/user.svg" alt="" />
-                                <div className="name">2</div>
-                            </div>
-                            {/* <div className="msg-count">10</div> */}
-                        </div>
+                        {
+                            chats.map((chat, index) => {
+                                return (
+                                    <ChatListItem key={index} chatId={chat.chatId} chatName={chat.chatName} onClickHandler={openChatHandler}/>
+                                )
+                            })
+                        }
                     </div>
                 </div>
 
                 <div className="chat-window">
-                    <Chat chatId={chatId} />
+                    <Chat chatId={chatId} chatName={chatName} />
                 </div>
             </div>
         </>

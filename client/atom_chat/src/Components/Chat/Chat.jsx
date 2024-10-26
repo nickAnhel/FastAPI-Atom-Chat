@@ -5,9 +5,7 @@ import "./Chat.css"
 import Message from "../Message/Message";
 
 
-
-
-function Chat({ chatId }) {
+function Chat({ chatId, chatName }) {
     if (!chatId) {
         return null;
     }
@@ -100,7 +98,7 @@ function Chat({ chatId }) {
 
             <div className="chat-header">
                 <img src="../../../assets/user.svg" alt="" />
-                <h2><span id="ws-id">{chatId}</span></h2>
+                <h2><span id="ws-id">{chatName}</span></h2>
             </div>
 
             <div className="chat-body" ref={messagesEndRef}>
