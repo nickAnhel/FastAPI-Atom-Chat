@@ -1,9 +1,10 @@
+import uuid
 from typing import Any
 from sqlalchemy.orm import selectinload
 from sqlalchemy import insert, select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.chat.models import MessageModel
+from src.messages.models import MessageModel
 
 
 class MessageRepository:
@@ -26,20 +27,20 @@ class MessageRepository:
 
     async def get_multi(
         self,
-        *,
+        chat_id: uuid.UUID,
         order: str,
         order_desc: bool,
         offset: int,
         limit: int,
-        **filters,
     ) -> list[MessageModel]:
         query = (
             select(MessageModel)
-            .filter_by(**filters)
+            .filter_by(chat_id=chat_id)
             .order_by(desc(order) if order_desc else order)
             .offset(offset)
             .limit(limit)
             .options(selectinload(MessageModel.user))
         )
+
         result = await self._session.execute(query)
         return list(result.scalars().all())

@@ -49,14 +49,14 @@ function Main() {
                     </div>
 
                     <div className="chats">
-                        <div className="chat" id="1" onClick={() => openChatHandler(1)}>
+                        <div className="chat" id="036d17d9-ce9d-41cf-84c2-6b25133fc30a" onClick={() => openChatHandler("036d17d9-ce9d-41cf-84c2-6b25133fc30a")}>
                             <div className="chat-label">
                                 <img src="../../../assets/user.svg" alt="" />
                                 <div className="name">1</div>
                             </div>
                             {/* <div className="msg-count">3</div> */}
                         </div>
-                        <div className="chat" id="2" onClick={() => openChatHandler(2)}>
+                        <div className="chat" id="2aa90eef-9f4e-4b98-867c-4fadd4525039" onClick={() => openChatHandler("2aa90eef-9f4e-4b98-867c-4fadd4525039")}>
                             <div className="chat-label">
                                 <img src="../../../assets/user.svg" alt="" />
                                 <div className="name">2</div>

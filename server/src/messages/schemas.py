@@ -21,7 +21,7 @@ class MessageGetWS(MessageCreateWS):
 
 
 class MessageCreate(BaseSchema):
-    chat_id: int
+    chat_id: uuid.UUID
     content: str
     user_id: uuid.UUID
     created_at: datetime.datetime

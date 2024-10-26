@@ -1,6 +1,6 @@
 from fastapi import WebSocket
 
-from src.chat.schemas import MessageGetWS
+from src.messages.schemas import MessageGetWS
 
 
 class ConnectionManager:

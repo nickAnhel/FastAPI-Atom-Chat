@@ -46,12 +46,13 @@ function Chat({ chatId }) {
     }, [chatId, userId]);
 
     useEffect(() => {
-        ws.current = new WebSocket(`ws://localhost:8000/chat/ws/${chatId}/${userId}`);
+        ws.current = new WebSocket(`ws://localhost:8000/chats/${chatId}/${userId}`);
 
         ws.current.onmessage = (event) => {
             let data = JSON.parse(JSON.parse(event.data));
-            let sender = data.user_id == userId ? "You" : message.user.username;
-            addMessageToChat(data.content, sender, data.created_at);
+            let sender = data.user_id == userId ? "You" : data.username;
+            let created_at = new Date(data.created_at + "Z");
+            addMessageToChat(data.content, sender, created_at);
         };
 
         return () => {

@@ -1,22 +1,30 @@
-from src.chat.repostory import MessageRepository
-from src.chat.schemas import MessageGetWithUser, MessageCreate
+import uuid
+from sqlalchemy.exc import IntegrityError
+
+from src.chats.exceptions import ChatNotFound
+
+from src.messages.repository import MessageRepository
+from src.messages.schemas import MessageGetWithUser, MessageCreate
 
 
 class MessageService:
     def __init__(self, repostory: MessageRepository) -> None:
         self._repository = repostory
 
-    async def add_message(
+    async def create_message(
         self,
         message: MessageCreate,
     ) -> MessageGetWithUser:
-        msg = await self._repository.create(data=message.model_dump())
-        return MessageGetWithUser.model_validate(msg)
+        try:
+            msg = await self._repository.create(data=message.model_dump())
+            return MessageGetWithUser.model_validate(msg)
+        except IntegrityError as exc:
+            raise ChatNotFound(f"Chat with id '{message.chat_id}' not found") from exc
 
-    async def get_list(
+    async def get_messages(
         self,
         *,
-        chat_id: int,
+        chat_id: uuid.UUID,
         order: str,
         order_desc: bool,
         offset: int,
