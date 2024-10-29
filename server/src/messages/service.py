@@ -1,10 +1,11 @@
 import uuid
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.chats.exceptions import ChatNotFound
 
+from src.messages.exceptions import CantUpdateMessage
 from src.messages.repository import MessageRepository
-from src.messages.schemas import MessageGetWithUser, MessageCreate
+from src.messages.schemas import MessageGet, MessageGetWithUser, MessageCreate, MessageUpdate
 
 
 class MessageService:
@@ -31,6 +32,65 @@ class MessageService:
         limit: int,
     ) -> list[MessageGetWithUser]:
         messages = await self._repository.get_multi(
+            order=order,
+            order_desc=order_desc,
+            offset=offset,
+            limit=limit,
+            chat_id=chat_id,
+        )
+        return [MessageGetWithUser.model_validate(message) for message in messages]
+
+    async def delete_message(
+        self,
+        *,
+        user_id: uuid.UUID,
+        message_id: uuid.UUID,
+    ) -> bool:
+        return (
+            await self._repository.delete(
+                message_id=message_id,
+                user_id=user_id,
+            )
+            == 1
+        )
+
+    async def delete_messages(
+        self,
+        *,
+        chat_id: uuid.UUID,
+    ) -> int:
+        return await self._repository.delete_multi(chat_id=chat_id)
+
+    async def udpate_message(
+        self,
+        *,
+        data: MessageUpdate,
+        message_id: uuid.UUID,
+        user_id: uuid.UUID,
+    ) -> MessageGet:
+        try:
+            message = await self._repository.update(
+                data=data.model_dump(exclude_none=True),
+                message_id=message_id,
+                user_id=user_id,
+            )
+        except NoResultFound as exc:
+            raise CantUpdateMessage(f"Message with id '{message_id}' and user_id '{user_id}' not found") from exc
+
+        return MessageGet.model_validate(message)
+
+    async def search_messages(
+        self,
+        *,
+        chat_id: uuid.UUID,
+        query: str,
+        order: str,
+        order_desc: bool,
+        offset: int,
+        limit: int,
+    ) -> list[MessageGetWithUser]:
+        messages = await self._repository.search(
+            text=query,
             order=order,
             order_desc=order_desc,
             offset=offset,

@@ -33,3 +33,7 @@ class MessageGet(MessageCreate):
 
 class MessageGetWithUser(MessageGet):
     user: UserGet
+
+
+class MessageUpdate(BaseSchema):
+    content: str | None = None

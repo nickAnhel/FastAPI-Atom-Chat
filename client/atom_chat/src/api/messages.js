@@ -5,7 +5,7 @@ export async function  getMessages(chatId) {
     const token = await getAccessToken();
 
     const response = await fetch(
-        `http://localhost:8000/messages/${chatId}`, {
+        `http://localhost:8000/messages/?chat_id=${chatId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

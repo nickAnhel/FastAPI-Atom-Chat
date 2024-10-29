@@ -18,6 +18,8 @@ from src.chats.exc_handlers import (
     already_in_chat_handler,
     cant_add_members_handler,
 )
+from src.messages.exceptions import CantUpdateMessage
+from src.messages.exc_handlers import cant_update_message_handler
 
 
 def include_routers(app: FastAPI) -> None:
@@ -35,3 +37,5 @@ def add_exepton_handlers(app: FastAPI) -> None:
     app.add_exception_handler(PermissionDenied, permission_denied_handler)  # type: ignore
     app.add_exception_handler(AlreadyInChat, already_in_chat_handler)  # type: ignore
     app.add_exception_handler(CantAddMembers, cant_add_members_handler)  # type: ignore
+
+    app.add_exception_handler(CantUpdateMessage, cant_update_message_handler)  # type: ignore

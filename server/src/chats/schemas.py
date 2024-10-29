@@ -21,3 +21,4 @@ class ChatGet(BaseSchema):
 
 class ChatUpdate(BaseSchema):
     title: str | None = None
+    is_private: bool | None = None

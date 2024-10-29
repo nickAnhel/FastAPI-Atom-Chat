@@ -97,7 +97,7 @@ async def add_members_to_chat(
     members_ids: list[uuid.UUID],
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
-) -> bool:
+) -> int:
     return await service.add_members_to_chat(
         user_id=user.user_id,
         chat_id=chat_id,
@@ -119,7 +119,7 @@ async def remove_members_from_chat(
     )
 
 
-@router.put("/{chat_id}")
+@router.patch("/{chat_id}")
 async def update_chat(
     chat_id: uuid.UUID,
     data: ChatUpdate,
@@ -159,7 +159,7 @@ async def chat(
     manager: ConnectionManager = managers.get(chat_id, ConnectionManager())
     managers[chat_id] = manager
 
-    print(managers)
+    # print(managers)
 
     await manager.connect(websocket)
     try:

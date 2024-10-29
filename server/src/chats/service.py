@@ -101,7 +101,7 @@ class ChatService:
     ) -> bool:
         return await self._repository.remove_members(chat_id=chat_id, members_ids=[user_id]) == 1
 
-    async def _check_chat_exists_and_user_is_owner(
+    async def check_chat_exists_and_user_is_owner(
         self,
         *,
         chat_id: uuid.UUID,
@@ -121,12 +121,12 @@ class ChatService:
         chat_id: uuid.UUID,
         user_id: uuid.UUID,
         members_ids: list[uuid.UUID],
-    ) -> bool:
-        await self._check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
+    ) -> int:
+        await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
         try:
             return await self._repository.add_members(
                 [(chat_id, member_id) for member_id in members_ids],
-            ) == 1
+            )
         except IntegrityError as exc:
             raise CantAddMembers("Can't add members") from exc
 
@@ -137,7 +137,7 @@ class ChatService:
         user_id: uuid.UUID,
         members_ids: list[uuid.UUID],
     ) -> bool:
-        await self._check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
+        await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
         return await self._repository.remove_members(
             chat_id=chat_id,
             members_ids=members_ids,
@@ -150,7 +150,7 @@ class ChatService:
         chat_id: uuid.UUID,
         user_id: uuid.UUID,
     ):
-        await self._check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
+        await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
         chat = await self._repository.update(
             data=data.model_dump(exclude_none=True),
             chat_id=chat_id,
@@ -163,5 +163,5 @@ class ChatService:
         chat_id: uuid.UUID,
         user_id: uuid.UUID,
     ) -> bool:
-        await self._check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
+        await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
         return await self._repository.delete(chat_id=chat_id) == 1
