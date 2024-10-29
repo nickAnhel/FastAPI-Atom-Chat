@@ -125,3 +125,22 @@ class ChatRepository:
         result = await self._session.execute(stmt)
         await self._session.commit()
         return result.rowcount
+
+    async def search(
+        self,
+        *,
+        text: str,
+        order: str,
+        order_desc: bool,
+        offset: int,
+        limit: int,
+    ) -> list[ChatModel]:
+        query = (
+            select(ChatModel)
+            .where(ChatModel.title.like(f'%{text}%'))
+            .order_by(desc(order) if order_desc else order)
+            .offset(offset)
+            .limit(limit)
+        )
+        result = await self._session.execute(query)
+        return list(result.scalars().all())

@@ -165,3 +165,22 @@ class ChatService:
     ) -> bool:
         await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
         return await self._repository.delete(chat_id=chat_id) == 1
+
+    async def seach_chats(
+        self,
+        *,
+        query: str,
+        order: ChatOrder,
+        order_desc: bool,
+        offset: int,
+        limit: int,
+    ) -> list[ChatGet]:
+        chats = await self._repository.search(
+            text=query,
+            order=order,
+            order_desc=order_desc,
+            offset=offset,
+            limit=limit,
+        )
+        print(chats)
+        return [ChatGet.model_validate(chat) for chat in chats]

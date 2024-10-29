@@ -32,6 +32,42 @@ async def create_chat(
     )
 
 
+@router.get("/")
+async def get_chats(
+    order: ChatOrder = ChatOrder.ID,
+    order_desc: bool = False,
+    offset: int = 0,
+    limit: int = 100,
+    user: UserGet = Depends(get_current_active_user),
+    service: ChatService = Depends(get_chat_service),
+) -> list[ChatGet]:
+    return await service.get_chats(
+        order=order,
+        order_desc=order_desc,
+        offset=offset,
+        limit=limit,
+    )
+
+
+@router.get("/search")
+async def search_chats(
+    query: str,
+    order: ChatOrder = ChatOrder.ID,
+    order_desc: bool = False,
+    offset: int = 0,
+    limit: int = 100,
+    user: UserGet = Depends(get_current_active_user),
+    service: ChatService = Depends(get_chat_service),
+) -> list[ChatGet]:
+    return await service.seach_chats(
+        query=query,
+        order=order,
+        order_desc=order_desc,
+        offset=offset,
+        limit=limit,
+    )
+
+
 @router.get("/{chat_id}")
 async def get_chat(
     chat_id: uuid.UUID,
@@ -48,23 +84,6 @@ async def get_chat_members(
     service: ChatService = Depends(get_chat_service),
 ) -> list[UserGet]:
     return await service.get_chat_members(chat_id=chat_id)
-
-
-@router.get("/")
-async def get_chats(
-    order: ChatOrder = ChatOrder.ID,
-    order_desc: bool = False,
-    offset: int = 0,
-    limit: int = 100,
-    user: UserGet = Depends(get_current_active_user),
-    service: ChatService = Depends(get_chat_service),
-) -> list[ChatGet]:
-    return await service.get_chats(
-        order=order,
-        order_desc=order_desc,
-        offset=offset,
-        limit=limit,
-    )
 
 
 @router.post("/{chat_id}/join")
