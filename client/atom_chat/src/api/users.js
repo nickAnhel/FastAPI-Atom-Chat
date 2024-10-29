@@ -86,7 +86,7 @@ export async function restoreUser(username, password) {
 export async function getJoinedChats(userId) {
     const token = await getAccessToken();
     const response = await fetch(
-        'http://localhost:8000/users/chats/joined', {
+        'http://localhost:8000/users/chats', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

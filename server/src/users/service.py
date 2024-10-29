@@ -95,6 +95,25 @@ class UserService:
         )
         return [UserGet.model_validate(user) for user in users]
 
+    async def search_users(
+        self,
+        query: str,
+        user_id: uuid.UUID,
+        order: str = UsersOrder.ID,
+        order_desc: bool = False,
+        offset: int = 0,
+        limit: int = 100,
+    ) -> list[UserGet]:
+        users = await self._repository.search(
+            q=query,
+            user_id=user_id,
+            order=order,
+            order_desc=order_desc,
+            offset=offset,
+            limit=limit,
+        )
+        return [UserGet.model_validate(user) for user in users]
+
     async def get_joined_chats(
         self,
         user_id: uuid.UUID,

@@ -23,10 +23,10 @@ from src.messages.exc_handlers import cant_update_message_handler
 
 
 def include_routers(app: FastAPI) -> None:
-    app.include_router(users_router)
     app.include_router(auth_router)
-    app.include_router(messages_router)
+    app.include_router(users_router)
     app.include_router(chats_router)
+    app.include_router(messages_router)
 
 
 def add_exepton_handlers(app: FastAPI) -> None:

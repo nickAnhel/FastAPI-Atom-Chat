@@ -16,7 +16,7 @@ from src.chats.enums import ChatOrder
 
 router = APIRouter(
     prefix="/chats",
-    tags=["Chat"],
+    tags=["Chats"],
 )
 
 

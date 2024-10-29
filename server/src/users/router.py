@@ -23,13 +23,6 @@ async def create_user(
     return await users_service.create_user(data)
 
 
-@router.get("/me")
-async def get_current_user_info(
-    user: UserGet = Depends(get_current_active_user),
-) -> UserGet:
-    return user
-
-
 @router.get("/")
 async def get_user_by_id(
     user_id: uuid.UUID,
@@ -37,6 +30,21 @@ async def get_user_by_id(
     users_service: UserService = Depends(get_users_service),
 ) -> UserGet:
     return await users_service.get_user_by_id(user_id)
+
+
+@router.get("/me")
+async def get_current_user_info(
+    user: UserGet = Depends(get_current_active_user),
+) -> UserGet:
+    return user
+
+
+@router.get("/chats")
+async def get_joined_chats(
+    user: UserGet = Depends(get_current_active_user),
+    users_service: UserService = Depends(get_users_service),
+) -> list[ChatGet]:
+    return await users_service.get_joined_chats(user_id=user.user_id)
 
 
 @router.get("/list")
@@ -56,12 +64,24 @@ async def get_users(
     )
 
 
-@router.get("/chats/joined")
-async def get_joined_chats(
+@router.get("/search")
+async def search_users(
+    query: str,
+    order: UsersOrder = UsersOrder.ID,
+    order_desc: bool = False,
+    offset: int = 0,
+    limit: int = 100,
     user: UserGet = Depends(get_current_active_user),
     users_service: UserService = Depends(get_users_service),
-) -> list[ChatGet]:
-    return await users_service.get_joined_chats(user_id=user.user_id)
+) -> list[UserGet]:
+    return await users_service.search_users(
+        query=query,
+        user_id=user.user_id,
+        order=order,
+        order_desc=order_desc,
+        offset=offset,
+        limit=limit,
+    )
 
 
 @router.put("/")
@@ -90,6 +110,11 @@ async def restore_user(
     users_service: UserService = Depends(get_users_service),
 ) -> bool:
     return await users_service.restore_user(user_id=user.user_id)
+
+
+@router.patch("/block")
+async def block_user():
+    pass
 
 
 # @router.delete("/")
