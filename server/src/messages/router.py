@@ -1,7 +1,7 @@
 import uuid
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
 
+from src.schemas import Success
 from src.users.schemas import UserGet
 from src.auth.dependencies import get_current_active_user
 from src.chats.service import ChatService
@@ -63,10 +63,10 @@ async def clear_chat_messages(
     user: UserGet = Depends(get_current_active_user),
     message_service: MessageService = Depends(get_message_service),
     chat_service: ChatService = Depends(get_chat_service),
-) -> JSONResponse:
+) -> Success:
     await chat_service.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user.user_id)
     deleted_messages_count = await message_service.delete_messages(chat_id=chat_id)
-    return JSONResponse({"detail": f"Successfully deleted {deleted_messages_count} messages"})
+    return Success(detail=f"Successfully deleted {deleted_messages_count} messages")
 
 
 @router.delete("/{message_id}")
@@ -74,11 +74,9 @@ async def delete_message(
     message_id: uuid.UUID,
     user: UserGet = Depends(get_current_active_user),
     service: MessageService = Depends(get_message_service),
-) -> JSONResponse:
-    if await service.delete_message(message_id=message_id, user_id=user.user_id):
-        return JSONResponse({"detail": "Message deleted successfully"})
-
-    return JSONResponse({"detail": "Failed to delete message"}, status_code=400)
+) -> Success:
+    await service.delete_message(message_id=message_id, user_id=user.user_id)
+    return Success(detail="Successfully deleted message")
 
 
 @router.patch("/{message_id}")

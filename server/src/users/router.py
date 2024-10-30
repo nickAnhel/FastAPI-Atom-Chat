@@ -1,8 +1,10 @@
 import uuid
 from fastapi import APIRouter, Depends, status
 
+from src.schemas import Success
 from src.chats.schemas import ChatGet
 from src.auth.dependencies import get_current_active_user, get_current_admin_user, authenticate_user_for_restore
+
 from src.users.service import UserService
 from src.users.dependencies import get_users_service
 from src.users.schemas import UserCreate, UserGet, UserUpdate
@@ -104,8 +106,9 @@ async def delete_user(
 async def restore_user(
     user: UserGet = Depends(authenticate_user_for_restore),
     service: UserService = Depends(get_users_service),
-) -> bool:
-    return await service.restore_user(user_id=user.user_id)
+) -> Success:
+    await service.restore_user(user_id=user.user_id)
+    return Success(detail="Successfully restored user")
 
 
 @router.patch("/block")

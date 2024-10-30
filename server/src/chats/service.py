@@ -6,7 +6,14 @@ from src.users.schemas import UserGet
 from src.chats.repository import ChatRepository
 from src.chats.schemas import ChatCreate, ChatGet, ChatUpdate
 from src.chats.enums import ChatOrder
-from src.chats.exceptions import ChatNotFound, PermissionDenied, AlreadyInChat, CantAddMembers
+from src.chats.exceptions import (
+    ChatNotFound,
+    PermissionDenied,
+    AlreadyInChat,
+    CantAddMembers,
+    CantRemoveMembers,
+    FailedToLeaveChat,
+)
 
 
 class ChatService:
@@ -99,8 +106,9 @@ class ChatService:
         *,
         chat_id: uuid.UUID,
         user_id: uuid.UUID,
-    ) -> bool:
-        return await self._repository.remove_members(chat_id=chat_id, members_ids=[user_id]) == 1
+    ) -> None:
+        if await self._repository.remove_members(chat_id=chat_id, members_ids=[user_id]) != 1:
+            raise FailedToLeaveChat(f"Failed to leave chat with id '{chat_id}'")
 
     async def check_chat_exists_and_user_is_owner(
         self,
@@ -137,12 +145,17 @@ class ChatService:
         chat_id: uuid.UUID,
         user_id: uuid.UUID,
         members_ids: list[uuid.UUID],
-    ) -> bool:
+    ) -> int:
         await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
-        return await self._repository.remove_members(
-            chat_id=chat_id,
-            members_ids=members_ids,
-        ) == len(members_ids)
+        if (
+            removed_users_count := await self._repository.remove_members(
+                chat_id=chat_id,
+                members_ids=members_ids,
+            )
+        ) == 0:
+            raise CantRemoveMembers("Can't remove members")
+
+        return removed_users_count
 
     async def update_chat(
         self,
@@ -163,9 +176,9 @@ class ChatService:
         *,
         chat_id: uuid.UUID,
         user_id: uuid.UUID,
-    ) -> bool:
+    ) -> None:
         await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
-        return await self._repository.delete(chat_id=chat_id) == 1
+        await self._repository.delete(chat_id=chat_id)
 
     async def search_chats(
         self,

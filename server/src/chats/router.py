@@ -1,6 +1,7 @@
 import uuid
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, status
 
+from src.schemas import Success
 from src.users.schemas import UserGet
 from src.auth.dependencies import get_current_active_user
 from src.messages.dependencies import get_message_service
@@ -83,16 +84,17 @@ async def get_chat_members(
     return await service.get_chat_members(chat_id=chat_id)
 
 
-@router.post("/{chat_id}/join")
+@router.post("/{chat_id}/join", status_code=status.HTTP_201_CREATED)
 async def join_chat(
     chat_id: uuid.UUID,
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
-) -> bool:
-    return await service.join_chat(
+) -> Success:
+    await service.join_chat(
         chat_id=chat_id,
         user=user,
     )
+    return Success(detail="Successfully joined chat")
 
 
 @router.delete("/{chat_id}/leave")
@@ -100,25 +102,29 @@ async def leave_chat(
     chat_id: uuid.UUID,
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
-) -> bool:
-    return await service.leave_chat(
+) -> Success:
+    await service.leave_chat(
         user_id=user.user_id,
         chat_id=chat_id,
     )
 
+    return Success(detail="Successfully left chat")
 
-@router.post("/{chat_id}/add-members")
+
+@router.post("/{chat_id}/add-members", status_code=status.HTTP_201_CREATED)
 async def add_members_to_chat(
     chat_id: uuid.UUID,
     members_ids: list[uuid.UUID],
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
-) -> int:
-    return await service.add_members_to_chat(
+) -> Success:
+    added_users_count = await service.add_members_to_chat(
         user_id=user.user_id,
         chat_id=chat_id,
         members_ids=members_ids,
     )
+
+    return Success(detail=f"Successfully added {added_users_count} members")
 
 
 @router.delete("/{chat_id}/remove-members")
@@ -127,12 +133,14 @@ async def remove_members_from_chat(
     members_ids: list[uuid.UUID],
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
-) -> bool:
-    return await service.remove_members_from_chat(
+) -> Success:
+    removed_users_count = await service.remove_members_from_chat(
         user_id=user.user_id,
         chat_id=chat_id,
         members_ids=members_ids,
     )
+
+    return Success(detail=f"Successfully removed {removed_users_count} members")
 
 
 @router.patch("/{chat_id}")
@@ -154,11 +162,13 @@ async def delete_chat(
     chat_id: uuid.UUID,
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
-) -> bool:
-    return await service.delete_chat(
+) -> Success:
+    await service.delete_chat(
         user_id=user.user_id,
         chat_id=chat_id,
     )
+
+    return Success(detail="Successfully deleted chat")
 
 
 # WebSockets

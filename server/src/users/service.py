@@ -146,13 +146,11 @@ class UserService:
     async def restore_user(
         self,
         user_id: uuid.UUID,
-    ) -> bool:
+    ) -> None:
         try:
             await self._repository.mark_restored(user_id=user_id)
         except NoResultFound as exc:
             raise UserNotFound(f"User with id '{user_id}' not found") from exc
-
-        return True
 
     async def block_user(
         self,

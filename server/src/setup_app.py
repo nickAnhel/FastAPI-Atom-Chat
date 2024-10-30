@@ -7,19 +7,23 @@ from src.users.exceptions import UserNotFound, UsernameAlreadyExists
 from src.users.exc_handlers import user_not_found_handler, username_exists_handler
 from src.chats.router import router as chats_router
 from src.chats.exceptions import (
-    CantAddMembers,
     ChatNotFound,
     PermissionDenied,
     AlreadyInChat,
+    CantAddMembers,
+    CantRemoveMembers,
+    FailedToLeaveChat,
 )
 from src.chats.exc_handlers import (
     chat_not_found_handler,
     permission_denied_handler,
     already_in_chat_handler,
     cant_add_members_handler,
+    cant_remove_members_handler,
+    failed_to_leave_chat_handler,
 )
-from src.messages.exceptions import CantUpdateMessage
-from src.messages.exc_handlers import cant_update_message_handler
+from src.messages.exceptions import CantUpdateMessage, CantDeleteMessage
+from src.messages.exc_handlers import cant_update_message_handler, cant_delete_message_handler
 
 
 def include_routers(app: FastAPI) -> None:
@@ -37,5 +41,8 @@ def add_exepton_handlers(app: FastAPI) -> None:
     app.add_exception_handler(PermissionDenied, permission_denied_handler)  # type: ignore
     app.add_exception_handler(AlreadyInChat, already_in_chat_handler)  # type: ignore
     app.add_exception_handler(CantAddMembers, cant_add_members_handler)  # type: ignore
+    app.add_exception_handler(CantRemoveMembers, cant_remove_members_handler)  # type: ignore
+    app.add_exception_handler(FailedToLeaveChat, failed_to_leave_chat_handler)  # type: ignore
 
     app.add_exception_handler(CantUpdateMessage, cant_update_message_handler)  # type: ignore
+    app.add_exception_handler(CantDeleteMessage, cant_delete_message_handler)  # type: ignore

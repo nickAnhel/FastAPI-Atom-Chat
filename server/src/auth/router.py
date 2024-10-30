@@ -7,7 +7,9 @@ from fastapi import (
     Response,
 )
 
+from src.schemas import Success
 from src.users.schemas import UserGet, UserGetWithPassword
+
 from src.auth.schemas import Token
 from src.auth.service import RefreshTokenService
 from src.auth.config import auth_settings
@@ -59,7 +61,7 @@ async def get_new_refresh_token(
     response: Response,
     user: UserGet = Depends(get_current_active_user_for_refresh),
     service: RefreshTokenService = Depends(get_refresh_token_service),
-) -> None:
+) -> Success:
     old_refresh_token = request.cookies.get(auth_settings.refresh_token_cookie_key)
 
     if await service.is_blacklisted(refresh_token=old_refresh_token):  # type: ignore
@@ -79,9 +81,12 @@ async def get_new_refresh_token(
         httponly=True,
     )
 
+    return Success(detail="Successfully updated refresh token")
+
 
 @router.post("/logout")
 async def logout(
     response: Response,
-) -> None:
+) -> Success:
     response.delete_cookie(key=auth_settings.refresh_token_cookie_key)
+    return Success(detail="Successfully logged out")

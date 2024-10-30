@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.chats.exceptions import ChatNotFound
 
-from src.messages.exceptions import CantUpdateMessage
+from src.messages.exceptions import CantUpdateMessage, CantDeleteMessage
 from src.messages.repository import MessageRepository
 from src.messages.schemas import MessageGet, MessageGetWithUser, MessageCreate, MessageUpdate
 
@@ -45,14 +45,15 @@ class MessageService:
         *,
         user_id: uuid.UUID,
         message_id: uuid.UUID,
-    ) -> bool:
-        return (
+    ) -> None:
+        if (
             await self._repository.delete(
                 message_id=message_id,
                 user_id=user_id,
             )
-            == 1
-        )
+            != 1
+        ):
+            raise CantDeleteMessage(f"Message with id '{message_id}' and user_id '{user_id}' not found")
 
     async def delete_messages(
         self,

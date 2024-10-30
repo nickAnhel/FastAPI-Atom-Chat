@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 from sqlalchemy.orm import selectinload
-from sqlalchemy import insert, select, update, delete, desc, func
+from sqlalchemy import insert, select, update, delete, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.messages.models import MessageModel
