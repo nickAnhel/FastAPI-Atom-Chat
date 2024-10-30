@@ -90,7 +90,7 @@ class MessageService:
         limit: int,
     ) -> list[MessageGetWithUser]:
         messages = await self._repository.search(
-            text=query,
+            q=query,
             order=order,
             order_desc=order_desc,
             offset=offset,

@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 from sqlalchemy.orm import selectinload
-from sqlalchemy import insert, select, update, delete, desc
+from sqlalchemy import insert, select, update, delete, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.messages.models import MessageModel
@@ -103,7 +103,7 @@ class MessageRepository:
 
     async def search(
         self,
-        text: str,
+        q: str,
         order: str,
         order_desc: bool,
         offset: int,
@@ -114,7 +114,7 @@ class MessageRepository:
             select(MessageModel)
             .filter_by(**filters)
             .where(
-                MessageModel.content.like(f'%{text}%')
+                MessageModel.content.ilike(f'%{q}%'),
             )
             .order_by(desc(order) if order_desc else order)
             .offset(offset)

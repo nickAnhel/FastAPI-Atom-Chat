@@ -52,17 +52,14 @@ async def get_chats(
 @router.get("/search")
 async def search_chats(
     query: str,
-    order: ChatOrder = ChatOrder.ID,
-    order_desc: bool = False,
     offset: int = 0,
     limit: int = 100,
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
 ) -> list[ChatGet]:
-    return await service.seach_chats(
+    return await service.search_chats(
+        user_id=user.user_id,
         query=query,
-        order=order,
-        order_desc=order_desc,
         offset=offset,
         limit=limit,
     )
@@ -93,8 +90,8 @@ async def join_chat(
     service: ChatService = Depends(get_chat_service),
 ) -> bool:
     return await service.join_chat(
-        user_id=user.user_id,
         chat_id=chat_id,
+        user=user,
     )
 
 

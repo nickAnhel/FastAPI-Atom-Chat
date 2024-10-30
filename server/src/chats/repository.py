@@ -1,6 +1,6 @@
 from typing import Any
 import uuid
-from sqlalchemy import insert, select, update, delete, desc
+from sqlalchemy import insert, select, update, delete, desc, or_, func
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -129,18 +129,33 @@ class ChatRepository:
     async def search(
         self,
         *,
-        text: str,
-        order: str,
-        order_desc: bool,
+        user_id: uuid.UUID,
+        q: str,
         offset: int,
         limit: int,
     ) -> list[ChatModel]:
+        subquery = (
+            select(ChatModel.chat_id)
+            .where(
+                ChatModel.title.bool_op("%")(q),
+                or_(
+                    ChatModel.is_private == False,
+                    ChatModel.members.contains(UserModel(user_id=user_id)),
+                ),
+            )
+            .distinct()
+            .subquery()
+        )
+
         query = (
             select(ChatModel)
-            .where(ChatModel.title.like(f'%{text}%'))
-            .order_by(desc(order) if order_desc else order)
+            .join(subquery, ChatModel.chat_id == subquery.c.chat_id)
+            .order_by(
+                func.similarity(ChatModel.title, q).desc(),
+            )
             .offset(offset)
             .limit(limit)
         )
+
         result = await self._session.execute(query)
         return list(result.scalars().all())

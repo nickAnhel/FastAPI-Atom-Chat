@@ -99,16 +99,12 @@ class UserService:
         self,
         query: str,
         user_id: uuid.UUID,
-        order: str = UsersOrder.ID,
-        order_desc: bool = False,
         offset: int = 0,
         limit: int = 100,
     ) -> list[UserGet]:
         users = await self._repository.search(
             q=query,
             user_id=user_id,
-            order=order,
-            order_desc=order_desc,
             offset=offset,
             limit=limit,
         )

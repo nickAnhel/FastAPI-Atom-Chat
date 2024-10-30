@@ -67,8 +67,6 @@ async def get_users(
 @router.get("/search")
 async def search_users(
     query: str,
-    order: UsersOrder = UsersOrder.ID,
-    order_desc: bool = False,
     offset: int = 0,
     limit: int = 100,
     user: UserGet = Depends(get_current_active_user),
@@ -77,8 +75,6 @@ async def search_users(
     return await service.search_users(
         query=query,
         user_id=user.user_id,
-        order=order,
-        order_desc=order_desc,
         offset=offset,
         limit=limit,
     )

@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlalchemy import select, insert, update, delete, desc
+from sqlalchemy import select, insert, update, delete, desc, func
 
 from src.chats.models import ChatModel
 from src.users.models import UserModel
@@ -16,11 +16,7 @@ class UserRepository:
         self,
         data: dict[str, Any],
     ) -> UserModel:
-        stmt = (
-            insert(UserModel)
-            .values(**data)
-            .returning(UserModel)
-        )
+        stmt = insert(UserModel).values(**data).returning(UserModel)
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -30,10 +26,7 @@ class UserRepository:
         self,
         **filters,
     ) -> UserModel:
-        query = (
-            select(UserModel)
-            .filter_by(**filters)
-        )
+        query = select(UserModel).filter_by(**filters)
         result = await self._session.execute(query)
         return result.scalar_one()
 
@@ -63,24 +56,19 @@ class UserRepository:
         *,
         q: str,
         user_id: uuid.UUID,
-        order: str,
-        order_desc: bool,
         offset: int,
         limit: int,
     ) -> list[UserModel]:
-        # await self._session.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
-        # await self._session.execute(text("SET pg_trgm.similarity_threshold = 0.1"))
-
         query = (
             select(UserModel)
             .where(
-                UserModel.username.like(f'%{q}%'),
-                # UserModel.username.bool_op("%")(q),
+                # UserModel.username.like(f'%{q}%'),
+                UserModel.username.bool_op("%")(q),
                 UserModel.user_id != user_id,
                 UserModel.is_deleted == False,
                 UserModel.is_blocked == False,
             )
-            .order_by(desc(order) if order_desc else order)
+            .order_by(func.similarity(UserModel.username, q).desc())
             .offset(offset)
             .limit(limit)
         )
@@ -92,11 +80,7 @@ class UserRepository:
         self,
         **filters,
     ) -> list[ChatModel]:
-        query = (
-            select(UserModel)
-            .filter_by(**filters)
-            .options(selectinload(UserModel.joined_chats))
-        )
+        query = select(UserModel).filter_by(**filters).options(selectinload(UserModel.joined_chats))
         result = await self._session.execute(query)
         user = result.scalar_one()
         return user.joined_chats
@@ -106,12 +90,7 @@ class UserRepository:
         data: dict[str, Any],
         **filters,
     ) -> UserModel:
-        stmt = (
-            update(UserModel)
-            .values(**data)
-            .filter_by(**filters)
-            .returning(UserModel)
-        )
+        stmt = update(UserModel).values(**data).filter_by(**filters).returning(UserModel)
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -131,12 +110,7 @@ class UserRepository:
         self,
         **filters,
     ) -> UserModel:
-        stmt = (
-            update(UserModel)
-            .values(is_deleted=False)
-            .filter_by(**filters)
-            .returning(UserModel)
-        )
+        stmt = update(UserModel).values(is_deleted=False).filter_by(**filters).returning(UserModel)
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -146,12 +120,7 @@ class UserRepository:
         self,
         **filters,
     ) -> UserModel:
-        stmt = (
-            update(UserModel)
-            .values(is_blocked=True)
-            .filter_by(**filters)
-            .returning(UserModel)
-        )
+        stmt = update(UserModel).values(is_blocked=True).filter_by(**filters).returning(UserModel)
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -161,12 +130,7 @@ class UserRepository:
         self,
         **filters,
     ) -> UserModel:
-        stmt = (
-            update(UserModel)
-            .values(is_blocked=False)
-            .filter_by(**filters)
-            .returning(UserModel)
-        )
+        stmt = update(UserModel).values(is_blocked=False).filter_by(**filters).returning(UserModel)
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -176,10 +140,7 @@ class UserRepository:
         self,
         **filters,
     ) -> int:
-        stmt = (
-            delete(UserModel)
-            .filter_by(**filters)
-        )
+        stmt = delete(UserModel).filter_by(**filters)
 
         result = await self._session.execute(stmt)
         await self._session.commit()
