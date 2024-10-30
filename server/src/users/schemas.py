@@ -20,7 +20,7 @@ class UserGet(UserBase):
     username: UsernameStr
     is_deleted: bool
     is_blocked: bool
-
+    is_admin: bool
 
 
 class UserGetWithPassword(UserGet):

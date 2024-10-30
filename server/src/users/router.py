@@ -2,7 +2,7 @@ import uuid
 from fastapi import APIRouter, Depends, status
 
 from src.chats.schemas import ChatGet
-from src.auth.dependencies import get_current_active_user, authenticate_user_for_restore
+from src.auth.dependencies import get_current_active_user, get_current_admin_user, authenticate_user_for_restore
 from src.users.service import UserService
 from src.users.dependencies import get_users_service
 from src.users.schemas import UserCreate, UserGet, UserUpdate
@@ -18,18 +18,18 @@ router = APIRouter(
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(
     data: UserCreate,
-    users_service: UserService = Depends(get_users_service),
+    service: UserService = Depends(get_users_service),
 ) -> UserGet:
-    return await users_service.create_user(data)
+    return await service.create_user(data)
 
 
 @router.get("/")
 async def get_user_by_id(
     user_id: uuid.UUID,
     user: UserGet = Depends(get_current_active_user),
-    users_service: UserService = Depends(get_users_service),
+    service: UserService = Depends(get_users_service),
 ) -> UserGet:
-    return await users_service.get_user_by_id(user_id)
+    return await service.get_user_by_id(user_id)
 
 
 @router.get("/me")
@@ -42,9 +42,9 @@ async def get_current_user_info(
 @router.get("/chats")
 async def get_joined_chats(
     user: UserGet = Depends(get_current_active_user),
-    users_service: UserService = Depends(get_users_service),
+    service: UserService = Depends(get_users_service),
 ) -> list[ChatGet]:
-    return await users_service.get_joined_chats(user_id=user.user_id)
+    return await service.get_joined_chats(user_id=user.user_id)
 
 
 @router.get("/list")
@@ -54,9 +54,9 @@ async def get_users(
     offset: int = 0,
     limit: int = 100,
     user: UserGet = Depends(get_current_active_user),
-    users_service: UserService = Depends(get_users_service),
+    service: UserService = Depends(get_users_service),
 ) -> list[UserGet]:
-    return await users_service.get_users(
+    return await service.get_users(
         order=order,
         desc=desc,
         offset=offset,
@@ -72,9 +72,9 @@ async def search_users(
     offset: int = 0,
     limit: int = 100,
     user: UserGet = Depends(get_current_active_user),
-    users_service: UserService = Depends(get_users_service),
+    service: UserService = Depends(get_users_service),
 ) -> list[UserGet]:
-    return await users_service.search_users(
+    return await service.search_users(
         query=query,
         user_id=user.user_id,
         order=order,
@@ -88,9 +88,9 @@ async def search_users(
 async def update_user(
     data: UserUpdate,
     user: UserGet = Depends(get_current_active_user),
-    users_service: UserService = Depends(get_users_service),
+    service: UserService = Depends(get_users_service),
 ) -> UserGet:
-    return await users_service.update_user(
+    return await service.update_user(
         user_id=user.user_id,
         data=data,
     )
@@ -99,27 +99,40 @@ async def update_user(
 @router.patch("/")
 async def delete_user(
     user: UserGet = Depends(get_current_active_user),
-    users_service: UserService = Depends(get_users_service),
-) -> bool:
-    return await users_service.delete_user(user_id=user.user_id)
+    service: UserService = Depends(get_users_service),
+) -> UserGet:
+    return await service.delete_user(user_id=user.user_id)
 
 
 @router.patch("/restore")
 async def restore_user(
     user: UserGet = Depends(authenticate_user_for_restore),
-    users_service: UserService = Depends(get_users_service),
+    service: UserService = Depends(get_users_service),
 ) -> bool:
-    return await users_service.restore_user(user_id=user.user_id)
+    return await service.restore_user(user_id=user.user_id)
 
 
 @router.patch("/block")
-async def block_user():
-    pass
+async def block_user(
+    user_id: uuid.UUID,
+    admin: UserGet = Depends(get_current_admin_user),
+    service: UserService = Depends(get_users_service),
+) -> UserGet:
+    return await service.block_user(user_id=user_id)
+
+
+@router.patch("/unblock")
+async def unblock_user(
+    user_id: uuid.UUID,
+    admin: UserGet = Depends(get_current_admin_user),
+    service: UserService = Depends(get_users_service),
+) -> UserGet:
+    return await service.unblock_user(user_id=user_id)
 
 
 # @router.delete("/")
 # async def fully_delete_user(
 #     user: UserGet = Depends(),
-#     users_service: UserService = Depends(get_users_service),
+#     service: UserService = Depends(get_users_service),
 # ) -> bool:
-#     return await users_service.fully_delete_user(user_id=user.user_id)
+#     return await service.fully_delete_user(user_id=user.user_id)

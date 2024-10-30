@@ -12,6 +12,7 @@ class UserModel(Base):
     hashed_password: Mapped[str]
     is_deleted: Mapped[bool] = mapped_column(default=False)
     is_blocked: Mapped[bool] = mapped_column(default=False)
+    is_admin: Mapped[bool] = mapped_column(default=False)
 
     messages: Mapped[list["MessageModel"]] = relationship(back_populates="user")
     created_chats: Mapped[list["ChatModel"]] = relationship(

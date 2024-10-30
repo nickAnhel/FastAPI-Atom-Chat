@@ -62,6 +62,16 @@ def _check_user_is_active(
     _check_user_not_blocked(user)
 
 
+def _check_user_is_admin(
+    user: UserGet,
+) -> None:
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not an admin",
+        )
+
+
 def authenticate_user_closure(
     should_be_deleted: bool = False,
     can_be_blocked: bool = False,
@@ -84,7 +94,6 @@ def authenticate_user_closure(
             ) from exc
 
         if not validate_password(form_data.password, user.hashed_password):
-            print("Jopa")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password",
@@ -167,6 +176,13 @@ async def get_current_active_user(
 ) -> UserGet:
     _check_user_is_active(current_user)
     return current_user
+
+
+async def get_current_admin_user(
+    active_user: UserGet = Depends(get_current_active_user),
+) -> UserGet:
+    _check_user_is_admin(active_user)
+    return active_user
 
 
 async def get_current_active_user_for_refresh(

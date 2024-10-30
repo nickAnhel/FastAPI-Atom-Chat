@@ -78,20 +78,21 @@ class ChatService:
         self,
         *,
         chat_id: uuid.UUID,
-        user_id: uuid.UUID,
+        user: UserGet,
     ) -> bool:
         try:
-            chat = await self._repository.get_single(chat_id=chat_id)
-            if chat.is_private:
-                raise PermissionDenied(f"Chat with id '{chat_id}' is private")
+            if not user.is_admin:
+                chat = await self._repository.get_single(chat_id=chat_id)
+                if chat.is_private:
+                    raise PermissionDenied(f"Chat with id '{chat_id}' is private")
 
-            return await self._repository.add_members([(chat_id, user_id)]) == 1
+            return await self._repository.add_members([(chat_id, user.user_id)]) == 1
 
         except NoResultFound as exc:
             raise ChatNotFound(f"Chat with id '{chat_id}' not found") from exc
 
         except IntegrityError as exc:
-            raise AlreadyInChat(f"User with id '{user_id}' already in chat") from exc
+            raise AlreadyInChat(f"User with id '{user.user_id}' already in chat") from exc
 
     async def leave_chat(
         self,

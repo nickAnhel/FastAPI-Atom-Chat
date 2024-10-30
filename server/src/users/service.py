@@ -118,7 +118,7 @@ class UserService:
         self,
         user_id: uuid.UUID,
     ) -> list[ChatGet]:
-        chats =  await self._repository.get_joined_chats(user_id=user_id)
+        chats = await self._repository.get_joined_chats(user_id=user_id)
         return [ChatGet.model_validate(chat) for chat in chats]
 
     async def update_user(
@@ -139,13 +139,13 @@ class UserService:
     async def delete_user(
         self,
         user_id: uuid.UUID,
-    ) -> bool:
+    ) -> UserGet:
         try:
-            await self._repository.mark_deleted(user_id=user_id)
+            user = await self._repository.mark_deleted(user_id=user_id)
         except NoResultFound as exc:
             raise UserNotFound(f"User with id '{user_id}' not found") from exc
 
-        return True
+        return UserGet.model_validate(user)
 
     async def restore_user(
         self,
@@ -157,3 +157,25 @@ class UserService:
             raise UserNotFound(f"User with id '{user_id}' not found") from exc
 
         return True
+
+    async def block_user(
+        self,
+        user_id: uuid.UUID,
+    ) -> UserGet:
+        try:
+            user = await self._repository.mark_blocked(user_id=user_id)
+        except NoResultFound as exc:
+            raise UserNotFound(f"User with id '{user_id}' not found") from exc
+
+        return UserGet.model_validate(user)
+
+    async def unblock_user(
+        self,
+        user_id: uuid.UUID,
+    ) -> UserGet:
+        try:
+            user = await self._repository.mark_unblocked(user_id=user_id)
+        except NoResultFound as exc:
+            raise UserNotFound(f"User with id '{user_id}' not found") from exc
+
+        return UserGet.model_validate(user)
