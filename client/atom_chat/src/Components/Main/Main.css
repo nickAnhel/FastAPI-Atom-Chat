@@ -1,4 +1,7 @@
-#ws-id {color: #fff}
+#ws-id {
+    color: #fff
+}
+
 .chat-container {
     display: flex;
     flex-direction: row;
@@ -61,8 +64,6 @@
 }
 
 
-
-
 .msg-count {
     background-color: #505050;
     padding: 0.4em;
@@ -88,4 +89,26 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Create button */
+
+.create {
+    border: 2px solid #535bf2;
+}
+
+.create > .chat-label {
+    font-size: 1em;
+    color: #535bf2;
+    gap: 0;
+    margin: auto;
+}
+
+.create .chat-label img {
+    height: 1.5em;
+    width: 1.5em;
 }

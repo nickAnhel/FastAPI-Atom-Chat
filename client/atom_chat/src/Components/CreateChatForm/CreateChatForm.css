@@ -1,0 +1,83 @@
+.create-chat-form {
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.create-chat-form h2 {
+    color: #fff;
+    font-size: 2em;
+    margin: 0;
+    margin-bottom: 10px;
+}
+
+.create-chat-form button {
+    width: 100%;
+    margin: 0;
+}
+
+.cancel {
+    background-color: #3f3f3f;
+    color: #ccc;
+}
+
+.create-chat-form input {
+    font-size: 20px;
+    padding: 10px 20px;
+    border: 2px solid #ccc;
+    margin: 0;
+}
+
+.item {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.item label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    font-size: 20px;
+    padding: 10px 10px;
+    cursor: pointer;
+    transition: all .1s ease-in-out;
+    color: #e0e0e0;
+    border-radius: 5px;
+    border: 2px solid #ccc;
+    background-color: #3f3f3f;
+}
+
+.item [type="checkbox"] {
+    display: none;
+}
+
+.item label::before {
+    content: "";
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    margin-right: 15px;
+    vertical-align: middle;
+    transition: all .1s ease-in-out;
+}
+
+.item [type="checkbox"]:checked+label {
+    border-color: #535bf2;
+    color: #535bf2;
+    transition: all .1s ease-in-out;
+}
+
+.item [type="checkbox"]:checked+label::before {
+    background-color: #535bf2;
+    border-color: #535bf2;
+    transition: all .1s ease-in-out;
+}

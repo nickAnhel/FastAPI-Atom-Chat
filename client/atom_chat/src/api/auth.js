@@ -50,6 +50,7 @@ export async function getNewAccessToken() {
     } else {
         // window.location.href = '/login';
         // return <Redirect to={"/login"} />;
+        return null;
     }
 }
 
