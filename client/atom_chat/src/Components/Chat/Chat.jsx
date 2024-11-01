@@ -4,7 +4,6 @@ import "./Chat.css"
 import Message from "../Message/Message";
 import Event from "../Event/Event";
 
-import { getChatMessages } from "../../api/messages";
 import { getJoinedChats } from "../../api/users";
 import { joinChat, leaveChat, getChatHistory } from "../../api/chats";
 
@@ -20,6 +19,7 @@ function Chat({ chatId, chatName }) {
     const [isFirstRender, setIsFirstRender] = useState(true);
     const ws = useRef(null);
     const messagesEndRef = useRef(null);
+    const textareaRef = useRef(null);
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -104,6 +104,10 @@ function Chat({ chatId, chatName }) {
         };
     }, [chatId, userId]);
 
+    const resizeTextarea = () => {
+        textareaRef.current.style.height = `${Math.min(textareaRef.current.value.split("\n").length * 25, 200)}px`;
+    }
+
     const clearChat = () => {
         setChatItems([]);
     }
@@ -127,25 +131,34 @@ function Chat({ chatId, chatName }) {
     }
 
     const sendMessage = (event) => {
-        document.getElementById("message-input").value = "";
-        if (message != "") {
+        if (message.trim() != "") {
+            document.getElementById("message-input").value = "";
+
             let now = new Date();
-            addMessageToChat(message, "You", now);
+            addMessageToChat(message.trim(), "You", now);
 
             let msgData = {
-                content: message,
+                content: message.trim(),
                 created_at: new Date()
             }
             ws.current.send(
                 JSON.stringify(msgData)
             );
             setMessage("");
-        };
+            textareaRef.current.value = "";
+        } else {
+            textareaRef.current.focus()
+        }
     }
 
     const handleKeyDown = (event) => {
-        if (event.key === 'Enter' && message != "") {
+        if (event.shiftKey && event.key === 'Enter' && message.trim() != "") {
+            return;
+        }
+        else if (event.key === 'Enter' && message.trim() != "") {
             sendMessage(message);
+            event.preventDefault();
+            resizeTextarea();
         }
     };
 
@@ -169,7 +182,6 @@ function Chat({ chatId, chatName }) {
         const rect = button.getBoundingClientRect();
         menu.style.top = `${rect.bottom + 20}px`;
         // menu.style.left = `${rect.left - 120}px`;
-
         menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'block' : 'none';
     }
 
@@ -206,7 +218,19 @@ function Chat({ chatId, chatName }) {
             </div>
 
             <div id="chat-footer" className="chat-footer">
-                <input type="text" placeholder="Type a message" onChange={(e) => setMessage(e.target.value)} id="message-input" onKeyDown={handleKeyDown} />
+                {/* <input type="text" placeholder="Type a message" onChange={(e) => setMessage(e.target.value)} id="message-input" onKeyDown={handleKeyDown} /> */}
+                <div className="msg-box">
+                    <textarea
+                        name="message-input"
+                        ref={textareaRef}
+                        value={message}
+                        placeholder="Type a message"
+                        onChange={(e) => {setMessage(e.target.value); resizeTextarea()}}
+                        id="message-input"
+                        onKeyDown={handleKeyDown}
+                    >
+                    </textarea>
+                </div>
                 <button onClick={sendMessage}>
                     <img src="../../../assets/send-message.svg" alt="" />
                 </button>

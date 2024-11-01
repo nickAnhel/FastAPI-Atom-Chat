@@ -22,6 +22,7 @@ function Header() {
             <div className="header">
                 <div className='logo'><Link to="/">Atom Chat</Link></div>
                 <div className='navbar'>
+                {isLoggedIn ? <Link to="/">Chat</Link> : null}
                     {isLoggedIn ? <Link to="/profile">Profile</Link> : <Link to="/login">Login</Link>}
                 </div>
             </div>
