@@ -1,7 +1,7 @@
 import uuid
 import datetime
 from functools import partial
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models import Base
@@ -13,7 +13,8 @@ class MessageModel(Base):
     message_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     content: Mapped[str]
     created_at: Mapped[datetime.datetime] = mapped_column(
-        default=partial(datetime.datetime.now, tz=datetime.timezone.utc)
+        TIMESTAMP(timezone=True),
+        default=partial(datetime.datetime.now, tz=datetime.timezone.utc),
     )
 
     chat_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("chats.chat_id", ondelete="CASCADE"))

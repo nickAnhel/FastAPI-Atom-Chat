@@ -20,7 +20,6 @@ class EventRepository:
             insert(EventModel)
             .values(**data)
             .returning(EventModel)
-            .options(selectinload(EventModel.user))
         )
 
         result = await self._session.execute(stmt)
@@ -41,6 +40,7 @@ class EventRepository:
             .offset(offset)
             .limit(limit)
             .options(selectinload(EventModel.user))
+            .options(selectinload(EventModel.altered_user))
         )
         result = await self._session.execute(query)
         return list(reversed((result.scalars().all())))

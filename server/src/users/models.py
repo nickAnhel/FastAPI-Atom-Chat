@@ -24,4 +24,5 @@ class UserModel(Base):
         secondary="chat_user",
     )
 
-    events: Mapped[list["EventModel"]] = relationship(back_populates="user")
+    events: Mapped[list["EventModel"]] = relationship(back_populates="user", foreign_keys="EventModel.user_id")
+    altered_events: Mapped[list["EventModel"]] = relationship(back_populates="altered_user", foreign_keys="EventModel.altered_user_id")

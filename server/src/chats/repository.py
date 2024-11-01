@@ -1,5 +1,5 @@
-from typing import Any
 import uuid
+from typing import Any
 from sqlalchemy import insert, select, update, delete, union , desc, or_, func
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -77,6 +77,7 @@ class ChatRepository:
             select(EventModel)
             .join(union_query, EventModel.event_id == union_query.c.id)
             .options(selectinload(EventModel.user))
+            .options(selectinload(EventModel.altered_user))
         )
 
         messages: list[MessageModel] = (await self._session.execute(q1)).scalars().all()  # type: ignore

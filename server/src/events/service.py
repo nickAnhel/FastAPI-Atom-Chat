@@ -1,7 +1,7 @@
 import uuid
 
 from src.events.repository import EventRepository
-from src.events.schemas import EventCreate, EventGet
+from src.events.schemas import EventCreate, EventGet, EventGetWithUsers
 
 
 class EventService:
@@ -22,11 +22,11 @@ class EventService:
         chat_id: uuid.UUID,
         offset: int,
         limit: int,
-    ) -> list[EventGet]:
+    ) -> list[EventGetWithUsers]:
         events = await self._repository.get_multi(
             chat_id=chat_id,
             offset=offset,
             limit=limit,
         )
 
-        return [EventGet.model_validate(event) for event in events]
+        return [EventGetWithUsers.model_validate(event) for event in events]

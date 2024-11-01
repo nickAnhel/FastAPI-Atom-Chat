@@ -54,7 +54,7 @@ function Chat({ chatId, chatName }) {
             clearChat();
 
             const items = await getChatHistory(chatId);
-            console.log(items)
+            // console.log(items)
 
             items.forEach(
                 (item) => {
@@ -63,7 +63,23 @@ function Chat({ chatId, chatName }) {
                         let created_at = new Date(item.created_at + "Z");
                         addMessageToChat(item.content, sender, created_at);
                     } else if (item.item_type == "event") {
-                        addEventToChat(item.event_type, item.user.username);
+                        switch (item.event_type) {
+                            case "joined":
+                                addEventToChat(item.event_type, item.user.username, null);
+                                break;
+                            case "leaved":
+                                addEventToChat(item.event_type, item.user.username, null);
+                                break;
+                            case "created":
+                                addEventToChat(item.event_type, item.user.username, null);
+                                break;
+                            case "added":
+                                addEventToChat(item.event_type, item.user.username, item.altered_user.username);
+                                break;
+                            case "removed":
+                                addEventToChat(item.event_type, item.user.username, item.altered_user.username);
+                                break;
+                        }
                     }
 
                 }
@@ -103,11 +119,12 @@ function Chat({ chatId, chatName }) {
         }]);
     }
 
-    const addEventToChat = (action, username) => {
+    const addEventToChat = (action, username, addedUserUsername) => {
         setChatItems(items => [...items, {
             type: "event",
             action: action,
-            username: username
+            username: username,
+            addedUserUsername: addedUserUsername
         }]);
     }
 
@@ -183,7 +200,7 @@ function Chat({ chatId, chatName }) {
                             )
                         } else if (item.type == "event") {
                             return (
-                                <Event key={index} action={item.action} username={item.username} />
+                                <Event key={index} action={item.action} username={item.username} addedUserUsername={item.addedUserUsername} />
                             )
                         }
                     })

@@ -172,13 +172,24 @@ async def add_members_to_chat(
     chat_id: uuid.UUID,
     members_ids: list[uuid.UUID],
     user: UserGet = Depends(get_current_active_user),
-    service: ChatService = Depends(get_chat_service),
+    chat_service: ChatService = Depends(get_chat_service),
+    event_service: EventService = Depends(get_event_service),
 ) -> Success:
-    added_users_count = await service.add_members_to_chat(
+    added_users_count = await chat_service.add_members_to_chat(
         user_id=user.user_id,
         chat_id=chat_id,
         members_ids=members_ids,
     )
+
+    for altered_user_id in members_ids:
+        await event_service.create_event(
+            data=EventCreate(
+                chat_id=chat_id,
+                event_type=EventType.ADD,
+                user_id=user.user_id,
+                altered_user_id=altered_user_id,
+            )
+        )
 
     return Success(detail=f"Successfully added {added_users_count} members")
 
@@ -188,13 +199,24 @@ async def remove_members_from_chat(
     chat_id: uuid.UUID,
     members_ids: list[uuid.UUID],
     user: UserGet = Depends(get_current_active_user),
-    service: ChatService = Depends(get_chat_service),
+    chat_service: ChatService = Depends(get_chat_service),
+    event_service: EventService = Depends(get_event_service),
 ) -> Success:
-    removed_users_count = await service.remove_members_from_chat(
+    removed_users_count = await chat_service.remove_members_from_chat(
         user_id=user.user_id,
         chat_id=chat_id,
         members_ids=members_ids,
     )
+
+    for altered_user_id in members_ids:
+        await event_service.create_event(
+            data=EventCreate(
+                chat_id=chat_id,
+                event_type=EventType.REMOVE,
+                user_id=user.user_id,
+                altered_user_id=altered_user_id,
+            )
+        )
 
     return Success(detail=f"Successfully removed {removed_users_count} members")
 
