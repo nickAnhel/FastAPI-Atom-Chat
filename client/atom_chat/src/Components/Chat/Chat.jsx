@@ -60,8 +60,7 @@ function Chat({ chatId, chatName }) {
                 (item) => {
                     if (item.item_type == "message") {
                         let sender = item.user_id == userId ? "You" : item.user.username;
-                        let created_at = new Date(item.created_at + "Z");
-                        addMessageToChat(item.content, sender, created_at);
+                        addMessageToChat(item.content, sender, item.created_at);
                     } else if (item.item_type == "event") {
                         switch (item.event_type) {
                             case "joined":
@@ -97,8 +96,7 @@ function Chat({ chatId, chatName }) {
         ws.current.onmessage = (event) => {
             let data = JSON.parse(JSON.parse(event.data));
             let sender = data.user_id == userId ? "You" : data.username;
-            let created_at = new Date(data.created_at + "Z");
-            addMessageToChat(data.content, sender, created_at);
+            addMessageToChat(data.content, sender, data.created_at);
         };
 
         return () => {
