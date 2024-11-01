@@ -7,12 +7,22 @@ from src.auth.dependencies import get_current_active_user
 from src.messages.dependencies import get_message_service
 from src.messages.service import MessageService
 from src.messages.schemas import MessageCreate, MessageCreateWS, MessageGetWS
+from src.events.service import EventService
+from src.events.dependencies import get_event_service
+from src.events.schemas import EventCreate
+from src.events.enums import EventType
 
 from src.chats.manager import ConnectionManager
 from src.chats.service import ChatService
 from src.chats.dependencies import get_chat_service
-from src.chats.schemas import ChatCreate, ChatGet, ChatUpdate
 from src.chats.enums import ChatOrder
+from src.chats.schemas import (
+    ChatCreate,
+    ChatGet,
+    ChatUpdate,
+    MessageHistoryItem,
+    EventHistoryItem,
+)
 
 
 router = APIRouter(
@@ -25,12 +35,23 @@ router = APIRouter(
 async def create_chat(
     data: ChatCreate,
     user: UserGet = Depends(get_current_active_user),
-    service: ChatService = Depends(get_chat_service),
+    chat_service: ChatService = Depends(get_chat_service),
+    event_service: EventService = Depends(get_event_service),
 ) -> ChatGet:
-    return await service.create_chat(
+    chat = await chat_service.create_chat(
         user_id=user.user_id,
         data=data,
     )
+
+    await event_service.create_event(
+        data=EventCreate(
+            chat_id=chat.chat_id,
+            event_type=EventType.CREATE,
+            user_id=user.user_id,
+        )
+    )
+
+    return chat
 
 
 @router.get("/")
@@ -84,16 +105,42 @@ async def get_chat_members(
     return await service.get_chat_members(chat_id=chat_id)
 
 
+@router.get("/{chat_id}/history")
+async def get_chat_history(
+    chat_id: uuid.UUID,
+    offset: int = 0,
+    limit: int = 100,
+    user: UserGet = Depends(get_current_active_user),
+    service: ChatService = Depends(get_chat_service),
+) -> list[MessageHistoryItem | EventHistoryItem]:
+# ) -> None:
+    return await service.get_chat_history(
+        chat_id=chat_id,
+        offset=offset,
+        limit=limit,
+    )
+
+
 @router.post("/{chat_id}/join", status_code=status.HTTP_201_CREATED)
 async def join_chat(
     chat_id: uuid.UUID,
     user: UserGet = Depends(get_current_active_user),
-    service: ChatService = Depends(get_chat_service),
+    chat_service: ChatService = Depends(get_chat_service),
+    event_service: EventService = Depends(get_event_service),
 ) -> Success:
-    await service.join_chat(
+    await chat_service.join_chat(
         chat_id=chat_id,
         user=user,
     )
+
+    await event_service.create_event(
+        data=EventCreate(
+            chat_id=chat_id,
+            event_type=EventType.JOIN,
+            user_id=user.user_id,
+        )
+    )
+
     return Success(detail="Successfully joined chat")
 
 
@@ -101,11 +148,20 @@ async def join_chat(
 async def leave_chat(
     chat_id: uuid.UUID,
     user: UserGet = Depends(get_current_active_user),
-    service: ChatService = Depends(get_chat_service),
+    chat_service: ChatService = Depends(get_chat_service),
+    event_service: EventService = Depends(get_event_service),
 ) -> Success:
-    await service.leave_chat(
+    await chat_service.leave_chat(
         user_id=user.user_id,
         chat_id=chat_id,
+    )
+
+    await event_service.create_event(
+        data=EventCreate(
+            chat_id=chat_id,
+            event_type=EventType.LEAVE,
+            user_id=user.user_id,
+        )
     )
 
     return Success(detail="Successfully left chat")

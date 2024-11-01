@@ -56,7 +56,7 @@ class MessageRepository:
         )
 
         result = await self._session.execute(query)
-        return list(result.scalars().all())
+        return list(reversed(result.scalars().all()))
 
     async def delete(
         self,

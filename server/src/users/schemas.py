@@ -1,21 +1,19 @@
 import uuid
 from typing import Annotated
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+
+from src.schemas import BaseSchema
 
 
 UsernameStr = Annotated[str, Field(min_length=1, max_length=32)]
 
 
-class UserBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-
-class UserCreate(UserBase):
+class UserCreate(BaseSchema):
     username: UsernameStr
     password: str  # TODO: add password validation
 
 
-class UserGet(UserBase):
+class UserGet(BaseSchema):
     user_id: uuid.UUID
     username: UsernameStr
     is_deleted: bool
@@ -27,5 +25,5 @@ class UserGetWithPassword(UserGet):
     hashed_password: str
 
 
-class UserUpdate(UserBase):
+class UserUpdate(BaseSchema):
     username: UsernameStr | None = None

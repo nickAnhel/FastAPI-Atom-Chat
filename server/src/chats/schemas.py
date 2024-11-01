@@ -1,13 +1,13 @@
 import uuid
 from typing import Annotated
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+
+from src.schemas import BaseSchema
+from src.messages.schemas import MessageGetWithUser
+from src.events.schemas import EventGet
 
 
 TitleStr = Annotated[str, Field(min_length=1, max_length=64)]
-
-
-class BaseSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
 
 
 class ChatCreate(BaseSchema):
@@ -26,3 +26,12 @@ class ChatGet(BaseSchema):
 class ChatUpdate(BaseSchema):
     title: TitleStr | None = None
     is_private: bool | None = None
+
+
+
+class MessageHistoryItem(MessageGetWithUser):
+    item_type: str = "message"
+
+
+class EventHistoryItem(EventGet):
+    item_type: str = "event"

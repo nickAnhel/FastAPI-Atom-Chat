@@ -1,12 +1,9 @@
 import uuid
 import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
+from src.schemas import BaseSchema
 from src.users.schemas import UserGet
-
-
-class BaseSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
 
 
 class MessageCreateWS(BaseModel):

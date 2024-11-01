@@ -63,3 +63,19 @@ export async function leaveChat(chatId) {
     });
     return response;
 }
+
+
+export async function getChatHistory(chatId) {
+    const token = await getAccessToken();
+
+    const response = await fetch(
+        `http://localhost:8000/chats/${chatId}/history`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    const result = await response.json();
+    return result;
+}

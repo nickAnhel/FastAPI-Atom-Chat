@@ -1,7 +1,7 @@
 import { getAccessToken } from "./auth";
 
 
-export async function  getMessages(chatId) {
+export async function  getChatMessages(chatId) {
     const token = await getAccessToken();
 
     const response = await fetch(

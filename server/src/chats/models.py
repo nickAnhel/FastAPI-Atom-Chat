@@ -13,6 +13,7 @@ class ChatModel(Base):
     is_private: Mapped[bool] = mapped_column(default=False)
 
     messages: Mapped[list["MessageModel"]] = relationship(back_populates="chat")
+    events: Mapped[list["EventModel"]] = relationship(back_populates="chat")
 
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"))
     owner: Mapped["UserModel"] = relationship(back_populates="created_chats")

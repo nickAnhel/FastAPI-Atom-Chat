@@ -1,10 +1,12 @@
 from typing import Any
 import uuid
-from sqlalchemy import insert, select, update, delete, desc, or_, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy import insert, select, update, delete, union , desc, or_, func
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.users.models import UserModel
+from src.messages.models import MessageModel
+from src.events.models import EventModel
 from src.chats.models import ChatModel, ChatUserM2M
 
 
@@ -36,6 +38,52 @@ class ChatRepository:
 
         result = await self._session.execute(query)
         return result.scalar_one()
+
+    async def history(
+        self,
+        *,
+        chat_id: uuid.UUID,
+        offset: int,
+        limit: int,
+    ) -> list[MessageModel | EventModel]:
+        msgs_query = (
+            select(MessageModel.message_id.label("id"), MessageModel.created_at)
+            .filter_by(chat_id=chat_id)
+        )
+
+        events_query = (
+            select(EventModel.event_id.label("id"), EventModel.created_at)
+            .filter_by(chat_id=chat_id)
+        )
+
+        union_query = (
+            union(
+                msgs_query,
+                events_query,
+            )
+            .order_by(desc("created_at"))
+            .offset(offset)
+            .limit(limit)
+            .cte()
+        )
+
+        q1  = (
+            select(MessageModel)
+            .join(union_query, MessageModel.message_id == union_query.c.id)
+            .options(selectinload(MessageModel.user))
+        )
+
+        q2 = (
+            select(EventModel)
+            .join(union_query, EventModel.event_id == union_query.c.id)
+            .options(selectinload(EventModel.user))
+        )
+
+        messages: list[MessageModel] = (await self._session.execute(q1)).scalars().all()  # type: ignore
+        events: list[EventModel] = (await self._session.execute(q2)).scalars().all()  # type: ignore
+
+        history = messages + events
+        return sorted(history, key=lambda item: item.created_at)
 
     async def get_members(
         self,

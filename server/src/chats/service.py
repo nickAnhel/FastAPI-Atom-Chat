@@ -2,10 +2,17 @@ import uuid
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from src.users.schemas import UserGet
+from src.messages.models import MessageModel
 
 from src.chats.repository import ChatRepository
-from src.chats.schemas import ChatCreate, ChatGet, ChatUpdate
 from src.chats.enums import ChatOrder
+from src.chats.schemas import (
+    ChatCreate,
+    ChatGet,
+    ChatUpdate,
+    MessageHistoryItem,
+    EventHistoryItem,
+)
 from src.chats.exceptions import (
     ChatNotFound,
     PermissionDenied,
@@ -80,6 +87,30 @@ class ChatService:
             limit=limit,
         )
         return [ChatGet.model_validate(chat) for chat in chats]
+
+    async def get_chat_history(
+        self,
+        *,
+        chat_id: uuid.UUID,
+        offset: int,
+        limit: int,
+    ) -> list[MessageHistoryItem | EventHistoryItem]:
+        history = await self._repository.history(
+            chat_id=chat_id,
+            offset=offset,
+            limit=limit,
+        )
+
+        items: list[MessageHistoryItem | EventHistoryItem] = [
+            (
+                MessageHistoryItem.model_validate(item)
+                if isinstance(item, MessageModel)
+                else EventHistoryItem.model_validate(item)
+            )
+            for item in history
+        ]
+
+        return items
 
     async def join_chat(
         self,

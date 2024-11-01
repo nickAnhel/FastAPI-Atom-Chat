@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from "react"
 import "./Chat.css"
 
 import Message from "../Message/Message";
+import Event from "../Event/Event";
 
-import { getMessages } from "../../api/messages";
+import { getChatMessages } from "../../api/messages";
 import { getJoinedChats } from "../../api/users";
-import { joinChat, leaveChat } from "../../api/chats";
+import { joinChat, leaveChat, getChatHistory } from "../../api/chats";
 
 
 function Chat({ chatId, chatName }) {
@@ -14,7 +15,7 @@ function Chat({ chatId, chatName }) {
     }
 
     const userId = localStorage.getItem("user_id");
-    const [messages, setMessages] = useState([]);
+    const [chatItems, setChatItems] = useState([]);
     const [message, setMessage] = useState([]);
     const [isFirstRender, setIsFirstRender] = useState(true);
     const ws = useRef(null);
@@ -29,7 +30,7 @@ function Chat({ chatId, chatName }) {
 
             setIsFirstRender(false);
         }
-    }, [isFirstRender, messages]);
+    }, [isFirstRender, chatItems]);
 
     useEffect(() => {
         const checkJoinedWrapper = async () => {
@@ -49,22 +50,29 @@ function Chat({ chatId, chatName }) {
     }, [userId, chatId])
 
     useEffect(() => {
-        const getMessagesWrapper = async () => {
+        const getHistoryWrapper = async () => {
             clearChat();
 
-            const msgs = await getMessages(chatId);
-            msgs.reverse().forEach(
-                (message) => {
-                    let sender = message.user_id == userId ? "You" : message.user.username;
-                    let created_at = new Date(message.created_at + "Z");
-                    addMessageToChat(message.content, sender, created_at);
+            const items = await getChatHistory(chatId);
+            console.log(items)
+
+            items.forEach(
+                (item) => {
+                    if (item.item_type == "message") {
+                        let sender = item.user_id == userId ? "You" : item.user.username;
+                        let created_at = new Date(item.created_at + "Z");
+                        addMessageToChat(item.content, sender, created_at);
+                    } else if (item.item_type == "event") {
+                        addEventToChat(item.event_type, item.user.username);
+                    }
+
                 }
             );
 
             setIsFirstRender(true);
         }
 
-        getMessagesWrapper();
+        getHistoryWrapper();
     }, [chatId, userId]);
 
     useEffect(() => {
@@ -83,14 +91,23 @@ function Chat({ chatId, chatName }) {
     }, [chatId, userId]);
 
     const clearChat = () => {
-        setMessages([]);
+        setChatItems([]);
     }
 
     const addMessageToChat = (msg, sender, createdAt) => {
-        setMessages(messages => [...messages, {
+        setChatItems(items => [...items, {
+            type: "message",
             content: msg,
             username: sender,
             createdAt: createdAt
+        }]);
+    }
+
+    const addEventToChat = (action, username) => {
+        setChatItems(items => [...items, {
+            type: "event",
+            action: action,
+            username: username
         }]);
     }
 
@@ -159,10 +176,16 @@ function Chat({ chatId, chatName }) {
 
             <div className="chat-body" ref={messagesEndRef}>
                 {
-                    messages.map((message, index) => {
-                        return (
-                            <Message key={index} username={message.username} content={message.content} createdAt={message.createdAt} />
-                        )
+                    chatItems.map((item, index) => {
+                        if (item.type == "message") {
+                            return (
+                                <Message key={index} username={item.username} content={item.content} createdAt={item.createdAt} />
+                            )
+                        } else if (item.type == "event") {
+                            return (
+                                <Event key={index} action={item.action} username={item.username} />
+                            )
+                        }
                     })
                 }
             </div>
