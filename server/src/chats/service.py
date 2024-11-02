@@ -141,6 +141,10 @@ class ChatService:
         if await self._repository.remove_members(chat_id=chat_id, members_ids=[user_id]) != 1:
             raise FailedToLeaveChat(f"Failed to leave chat with id '{chat_id}'")
 
+        # Delete chat if it has no members
+        if len(await self._repository.get_members(chat_id=chat_id)) == 0:
+            await self._repository.delete(chat_id=chat_id)
+
     async def check_chat_exists_and_user_is_owner(
         self,
         *,
@@ -163,6 +167,10 @@ class ChatService:
         members_ids: list[uuid.UUID],
     ) -> int:
         await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
+
+        if user_id in members_ids:
+            raise CantAddMembers("Can't add yourself to chat")
+
         try:
             return await self._repository.add_members(
                 [(chat_id, member_id) for member_id in members_ids],
@@ -178,6 +186,10 @@ class ChatService:
         members_ids: list[uuid.UUID],
     ) -> int:
         await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
+
+        if user_id in members_ids:
+            raise CantAddMembers("Can't remove yourself from chat")
+
         if (
             removed_users_count := await self._repository.remove_members(
                 chat_id=chat_id,

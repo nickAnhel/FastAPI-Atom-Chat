@@ -1,4 +1,5 @@
 import uuid
+from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, status
 
 from src.schemas import Success
@@ -156,13 +157,16 @@ async def leave_chat(
         chat_id=chat_id,
     )
 
-    await event_service.create_event(
-        data=EventCreate(
-            chat_id=chat_id,
-            event_type=EventType.LEAVE,
-            user_id=user.user_id,
+    try:
+        await event_service.create_event(
+            data=EventCreate(
+                chat_id=chat_id,
+                event_type=EventType.LEAVE,
+                user_id=user.user_id,
+            )
         )
-    )
+    except IntegrityError:
+        pass
 
     return Success(detail="Successfully left chat")
 
