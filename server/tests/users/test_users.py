@@ -134,7 +134,7 @@ async def test_delete_user_success(
         headers={"Authorization": f"Bearer {user['access_token']}"},
     )
     assert response.status_code == 200
-    assert response.json() is True
+    assert response.json()["is_deleted"] is True
 
 
 # async def test_delete_user_not_found(async_client: AsyncClient):

@@ -12,7 +12,7 @@ from src.events.dependencies import get_event_service
 from src.events.schemas import EventCreate
 from src.events.enums import EventType
 
-from src.chats.manager import ConnectionManager
+from src.chats.manager import RoomsManager
 from src.chats.service import ChatService
 from src.chats.dependencies import get_chat_service
 from src.chats.enums import ChatOrder
@@ -113,7 +113,7 @@ async def get_chat_history(
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
 ) -> list[MessageHistoryItem | EventHistoryItem]:
-# ) -> None:
+    # ) -> None:
     return await service.get_chat_history(
         chat_id=chat_id,
         offset=offset,
@@ -250,7 +250,7 @@ async def delete_chat(
 
 
 # WebSockets
-managers: dict[uuid.UUID, ConnectionManager] = {}
+manager = RoomsManager()
 
 
 @router.websocket("/{chat_id}/{user_id}")
@@ -260,12 +260,8 @@ async def chat(
     user_id: uuid.UUID,
     service: MessageService = Depends(get_message_service),
 ) -> None:
-    manager: ConnectionManager = managers.get(chat_id, ConnectionManager())
-    managers[chat_id] = manager
+    await manager.connect(chat_id, websocket)
 
-    # print(managers)
-
-    await manager.connect(websocket)
     try:
         while True:
             data = await websocket.receive_json()
@@ -281,6 +277,7 @@ async def chat(
             )
 
             await manager.broadcast(
+                chat_id,
                 MessageGetWS(
                     message_id=message.message_id,
                     username=message.user.username,
@@ -290,5 +287,6 @@ async def chat(
                 ),
                 except_for=websocket,
             )
+
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        manager.disconnect(chat_id, websocket)
