@@ -37,14 +37,12 @@ class ChatService:
         chat = await self._repository.create(data=chat_data)
 
         # Add members to chat
-        chat_users = [(chat.chat_id, user_id)]
+        chat_users = [user_id]
         if data.members:
-            chat_users.extend(
-                [(chat.chat_id, member_id) for member_id in data.members],
-            )
+            chat_users.extend(data.members)
 
         try:
-            await self._repository.add_members(data=chat_users)
+            await self._repository.add_members(chat_id=chat.chat_id, users_ids=chat_users)
         except IntegrityError as exc:
             raise CantAddMembers("Can't add members") from exc
 
@@ -124,7 +122,7 @@ class ChatService:
                 if chat.is_private:
                     raise PermissionDenied(f"Chat with id '{chat_id}' is private")
 
-            return await self._repository.add_members([(chat_id, user.user_id)]) == 1
+            return await self._repository.add_members(chat_id=chat_id, users_ids=[user.user_id]) == 1
 
         except NoResultFound as exc:
             raise ChatNotFound(f"Chat with id '{chat_id}' not found") from exc
@@ -172,9 +170,15 @@ class ChatService:
             raise CantAddMembers("Can't add yourself to chat")
 
         try:
-            return await self._repository.add_members(
-                [(chat_id, member_id) for member_id in members_ids],
-            )
+            if (
+                added_users_count := await self._repository.add_members(
+                    chat_id=chat_id,
+                    users_ids=members_ids,
+                )
+            ) == 0:
+                raise CantAddMembers("Failed to add members")
+
+            return added_users_count
         except IntegrityError as exc:
             raise CantAddMembers("Can't add members") from exc
 

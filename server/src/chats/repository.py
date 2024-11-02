@@ -1,6 +1,6 @@
 import uuid
 from typing import Any
-from sqlalchemy import insert, select, update, delete, union , desc, or_, func
+from sqlalchemy import insert, select, update, delete, union , desc, or_, func,text
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -120,11 +120,24 @@ class ChatRepository:
 
     async def add_members(
         self,
-        data: list[tuple[uuid.UUID, uuid.UUID]],
+        chat_id: uuid.UUID,
+        users_ids: list[uuid.UUID],
     ) -> int:
+        users_query = (
+            select(text(f"'{chat_id}' as chat_id"), UserModel.user_id)
+            .where(
+                UserModel.user_id.in_([user_id for user_id in users_ids]),
+                UserModel.is_deleted == False,
+                UserModel.is_blocked == False,
+            )
+        )
+
         stmt = (
             insert(ChatUserM2M)
-            .values(data)
+            .from_select(
+                ["chat_id", "user_id"],
+                users_query,
+            )
         )
 
         result = await self._session.execute(stmt)
