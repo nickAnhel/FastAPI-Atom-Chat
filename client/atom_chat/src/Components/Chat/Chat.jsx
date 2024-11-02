@@ -8,6 +8,14 @@ import { getJoinedChats } from "../../api/users";
 import { joinChat, leaveChat, getChatHistory } from "../../api/chats";
 
 
+function getMaxCharsInLine(textarea, content) {
+    const context = document.createElement('canvas').getContext('2d');
+    const computedStyle = window.getComputedStyle(textarea);
+    context.font = computedStyle.font;
+    const width = context.measureText(content).width / content.length;
+    return Math.floor(textarea.clientWidth / width);
+}
+
 function Chat({ chatId, chatName }) {
     if (!chatId) {
         return null;
@@ -105,7 +113,21 @@ function Chat({ chatId, chatName }) {
     }, [chatId, userId]);
 
     const resizeTextarea = () => {
-        textareaRef.current.style.height = `${Math.min(textareaRef.current.value.split("\n").length * 25, 200)}px`;
+        let rowsTotalHeight = textareaRef.current.value.split("\n").length * 25;
+        let symbolsTotalLength = Math.max(
+            Math.ceil(textareaRef.current.value.length / getMaxCharsInLine(textareaRef.current, textareaRef.current.value)), 1
+        ) * 25;
+
+        textareaRef.current.style.height = `${Math.min(
+            symbolsTotalLength ? Math.max(rowsTotalHeight, symbolsTotalLength) : rowsTotalHeight,
+            200
+        )
+            }px`;
+
+        messagesEndRef.current.scroll({
+            top: messagesEndRef.current.scrollHeight,
+            behavior: 'smooth',
+        });
     }
 
     const clearChat = () => {
@@ -181,7 +203,6 @@ function Chat({ chatId, chatName }) {
         const menu = document.getElementById('options');
         const rect = button.getBoundingClientRect();
         menu.style.top = `${rect.bottom + 20}px`;
-        // menu.style.left = `${rect.left - 120}px`;
         menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'block' : 'none';
     }
 
@@ -225,7 +246,7 @@ function Chat({ chatId, chatName }) {
                         ref={textareaRef}
                         value={message}
                         placeholder="Type a message"
-                        onChange={(e) => {setMessage(e.target.value); resizeTextarea()}}
+                        onChange={(e) => { setMessage(e.target.value); resizeTextarea() }}
                         id="message-input"
                         onKeyDown={handleKeyDown}
                     >
