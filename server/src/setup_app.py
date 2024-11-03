@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+from src.chats.sockets import socket_app as ws_app
+
 from src.auth.router import router as auth_router
 from src.users.router import router as users_router
 from src.chats.router import router as chats_router
@@ -45,6 +47,8 @@ def include_routers(app: FastAPI) -> None:
     app.include_router(chats_router)
     app.include_router(messages_router)
     app.include_router(events_router)
+
+    app.mount("/", ws_app)
 
 
 def add_exepton_handlers(app: FastAPI) -> None:

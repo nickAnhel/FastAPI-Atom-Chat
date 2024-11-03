@@ -1,19 +1,15 @@
 import uuid
 from sqlalchemy.exc import IntegrityError
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, status
+from fastapi import APIRouter, Depends, status
 
 from src.schemas import Success
 from src.users.schemas import UserGet
 from src.auth.dependencies import get_current_active_user
-from src.messages.dependencies import get_message_service
-from src.messages.service import MessageService
-from src.messages.schemas import MessageCreate, MessageCreateWS, MessageGetWS
 from src.events.service import EventService
 from src.events.dependencies import get_event_service
 from src.events.schemas import EventCreate
 from src.events.enums import EventType
 
-from src.chats.manager import RoomsManager
 from src.chats.service import ChatService
 from src.chats.dependencies import get_chat_service
 from src.chats.enums import ChatOrder
@@ -251,46 +247,3 @@ async def delete_chat(
     )
 
     return Success(detail="Successfully deleted chat")
-
-
-# WebSockets
-manager = RoomsManager()
-
-
-@router.websocket("/{chat_id}/{user_id}")
-async def chat(
-    websocket: WebSocket,
-    chat_id: uuid.UUID,
-    user_id: uuid.UUID,
-    service: MessageService = Depends(get_message_service),
-) -> None:
-    await manager.connect(chat_id, websocket)
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-
-            msg = MessageCreateWS.model_validate(data)
-            message = await service.create_message(
-                MessageCreate(
-                    chat_id=chat_id,
-                    user_id=user_id,
-                    content=msg.content,
-                    created_at=msg.created_at.replace(tzinfo=None),
-                )
-            )
-
-            await manager.broadcast(
-                chat_id,
-                MessageGetWS(
-                    message_id=message.message_id,
-                    username=message.user.username,
-                    user_id=message.user_id,
-                    content=message.content,
-                    created_at=message.created_at,
-                ),
-                except_for=websocket,
-            )
-
-    except WebSocketDisconnect:
-        manager.disconnect(chat_id, websocket)

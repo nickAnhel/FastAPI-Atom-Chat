@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { io } from "socket.io-client";
 import "./Chat.css"
 
 import Message from "../Message/Message";
@@ -16,6 +17,7 @@ function getMaxCharsInLine(textarea, content) {
     return Math.floor(textarea.clientWidth / width);
 }
 
+
 function Chat({ chatId, chatName }) {
     if (!chatId) {
         return null;
@@ -25,7 +27,7 @@ function Chat({ chatId, chatName }) {
     const [chatItems, setChatItems] = useState([]);
     const [message, setMessage] = useState([]);
     const [isFirstRender, setIsFirstRender] = useState(true);
-    const ws = useRef(null);
+    const socket = useRef(null);
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
 
@@ -62,7 +64,6 @@ function Chat({ chatId, chatName }) {
             clearChat();
 
             const items = await getChatHistory(chatId);
-            // console.log(items)
 
             items.forEach(
                 (item) => {
@@ -99,17 +100,27 @@ function Chat({ chatId, chatName }) {
     }, [chatId, userId]);
 
     useEffect(() => {
-        ws.current = new WebSocket(`ws://localhost:8000/chats/${chatId}/${userId}`);
+        socket.current = io("ws://localhost:8000", {
+            path: "/ws",
+            transports: ["websocket"],
+            upgrade: false,
+        });
 
-        ws.current.onmessage = (event) => {
-            let data = JSON.parse(JSON.parse(event.data));
-            let sender = data.user_id == userId ? "You" : data.username;
-            addMessageToChat(data.content, sender, data.created_at);
-        };
+        socket.current.emit("join", {
+            chat_id: chatId,
+        })
+
+        socket.current.on("message", (data) => {
+            let msgData = JSON.parse(data);
+            let sender = msgData.user_id == userId ? "You" : msgData.username;
+            addMessageToChat(msgData.content, sender, msgData.created_at);
+        })
 
         return () => {
-            ws.current.close();
-        };
+            socket.current.emit("leave", {
+                chat_id: chatId,
+            });
+        }
     }, [chatId, userId]);
 
     const resizeTextarea = () => {
@@ -160,12 +171,14 @@ function Chat({ chatId, chatName }) {
             addMessageToChat(message.trim(), "You", now);
 
             let msgData = {
+                chat_id: chatId,
+                user_id: userId,
                 content: message.trim(),
                 created_at: new Date()
             }
-            ws.current.send(
-                JSON.stringify(msgData)
-            );
+
+            socket.current.emit("message", msgData);
+
             setMessage("");
             textareaRef.current.value = "";
         } else {
