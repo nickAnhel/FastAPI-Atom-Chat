@@ -8,13 +8,10 @@ from httpx import AsyncClient
 async def test_create_user_success(async_client: AsyncClient):
     response = await async_client.post(
         "/users/",
-        json={"username": "test", "password": "test"},
+        json={"username": "test", "password": "string12"},
     )
     assert response.status_code == 201
     assert response.json()["username"] == "test"
-
-
-# TODO: add tests for wrong password
 
 
 @pytest.mark.parametrize(
@@ -27,7 +24,28 @@ async def test_create_user_wrong_username(
 ):
     response = await async_client.post(
         "/users/",
-        json={"username": username, "password": "test"},
+        json={"username": username, "password": "string12"},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "password",
+    [
+        "",
+        "str12",
+        "a" * 8,
+        "1" * 8,
+        "a" * 21,
+    ],
+)
+async def test_create_user_wrong_password(
+    async_client: AsyncClient,
+    password: str,
+):
+    response = await async_client.post(
+        "/users/",
+        json={"username": "test", "password": password},
     )
     assert response.status_code == 422
 
@@ -35,7 +53,7 @@ async def test_create_user_wrong_username(
 async def test_create_user_already_exists(async_client: AsyncClient):
     response = await async_client.post(
         "/users/",
-        json={"username": "test", "password": "test"},
+        json={"username": "test", "password": "string12"},
     )
     assert response.status_code == 409
 
@@ -116,14 +134,6 @@ async def test_update_user_wrong_username(
     assert response.status_code == 422
 
 
-# async def test_update_user_not_found(async_client: AsyncClient):
-#     response = await async_client.put(
-#         "/users/",
-#         json={"username": "updated"},
-#     )
-#     assert response.status_code == 404
-
-
 # Delete user tests
 async def test_delete_user_success(
     async_client: AsyncClient,
@@ -135,8 +145,3 @@ async def test_delete_user_success(
     )
     assert response.status_code == 200
     assert response.json()["is_deleted"] is True
-
-
-# async def test_delete_user_not_found(async_client: AsyncClient):
-#     response = await async_client.delete(f"/users/{uuid.uuid4()}")
-#     assert response.status_code == 404
