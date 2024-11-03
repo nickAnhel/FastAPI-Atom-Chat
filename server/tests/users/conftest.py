@@ -18,3 +18,17 @@ async def user(async_client: AsyncClient):
 
     user.update(token_response.json())
     return user
+
+
+@pytest.fixture
+async def admin_user(async_client: AsyncClient):
+    token_response = await async_client.post(
+        "/auth/login",
+        data={"username": "admin", "password": "admin123"},
+    )
+
+    user = {
+        "username": "admin",
+        "access_token": token_response.json()["access_token"],
+    }
+    return user

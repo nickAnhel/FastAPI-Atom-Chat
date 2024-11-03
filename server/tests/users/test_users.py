@@ -87,7 +87,7 @@ async def test_get_users_success(
         headers={"Authorization": f"Bearer {user['access_token']}"},
     )
     assert response.status_code == 200
-    assert len(response.json()) == 3
+    assert len(response.json()) == 4
 
 
 # Get current user info tests
@@ -101,6 +101,19 @@ async def test_get_current_user_info_success(
     )
     assert response.status_code == 200
     assert response.json()["username"] == user["username"]
+
+
+# Get users chats
+async def test_get_users_chats_success(
+    async_client: AsyncClient,
+    user: dict[str, Any],
+):
+    response = await async_client.get(
+        "/users/chats",
+        headers={"Authorization": f"Bearer {user['access_token']}"},
+    )
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 # Update user tests
@@ -145,3 +158,82 @@ async def test_delete_user_success(
     )
     assert response.status_code == 200
     assert response.json()["is_deleted"] is True
+
+
+# Restore user
+async def test_restore_user_success(async_client: AsyncClient):
+    user_response = await async_client.post(
+        "/users/",
+        json={"username": "test", "password": "string12"},
+    )
+    token_response = await async_client.post(
+        "/auth/login",
+        data={"username": "test", "password": "string12"},
+    )
+
+    response = await async_client.patch(
+        "/users/",
+        headers={"Authorization": f"Bearer {token_response.json()['access_token']}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["is_deleted"] is True
+
+    response = await async_client.patch(
+        "/users/restore",
+        data={"username": "test", "password": "string12"},
+    )
+
+    assert response.status_code == 200
+
+
+# Block user
+async def test_block_user_success(
+    async_client: AsyncClient,
+    admin_user: dict[str, Any],
+):
+    response = await async_client.get(
+        "/users/list",
+        headers={"Authorization": f"Bearer {admin_user['access_token']}"},
+    )
+    for user in response.json():
+        if user["username"] != "admin":
+            break
+
+    assert user["username"] != "admin"
+
+    response = await async_client.patch(
+        "/users/block?user_id=" + str(user["user_id"]),
+        headers={"Authorization": f"Bearer {admin_user['access_token']}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["is_blocked"] is True
+
+
+# Unblock user
+async def test_unblock_user_success(
+    async_client: AsyncClient,
+    admin_user: dict[str, Any],
+):
+    response = await async_client.get(
+        "/users/list",
+        headers={"Authorization": f"Bearer {admin_user['access_token']}"},
+    )
+    for user in response.json():
+        if user["username"] != "admin":
+            break
+
+    assert user["username"] != "admin"
+
+    response = await async_client.patch(
+        "/users/block?user_id=" + str(user["user_id"]),
+        headers={"Authorization": f"Bearer {admin_user['access_token']}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["is_blocked"] is True
+
+    response = await async_client.patch(
+        "/users/unblock?user_id=" + str(user["user_id"]),
+        headers={"Authorization": f"Bearer {admin_user['access_token']}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["is_blocked"] is False

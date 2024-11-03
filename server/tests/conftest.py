@@ -1,13 +1,16 @@
 import typing
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy import insert
 from sqlalchemy.pool import NullPool
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from httpx import AsyncClient, ASGITransport
 
 from src.main import app
 from src.config import settings
 from src.database import get_async_session
 from src.models import Base
+from src.users.models import UserModel
+from src.users.utils import get_password_hash
 
 
 test_engine = create_async_engine(
@@ -36,6 +39,13 @@ async def setup_db():
 
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.execute(
+            insert(UserModel).values(
+                username="admin",
+                hashed_password=get_password_hash("admin123"),
+                is_admin=True,
+            )
+        )
 
     yield
 
