@@ -210,7 +210,7 @@ class ChatService:
         data: ChatUpdate,
         chat_id: uuid.UUID,
         user_id: uuid.UUID,
-    ):
+    ) -> ChatGet:
         await self.check_chat_exists_and_user_is_owner(chat_id=chat_id, user_id=user_id)
         chat = await self._repository.update(
             data=data.model_dump(exclude_none=True),

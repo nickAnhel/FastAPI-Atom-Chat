@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlalchemy import select, insert, update, delete, desc, func
+from sqlalchemy import select, insert, update, desc, func
 
 from src.chats.models import ChatModel
 from src.users.models import UserModel

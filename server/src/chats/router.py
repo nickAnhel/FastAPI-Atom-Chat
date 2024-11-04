@@ -110,7 +110,6 @@ async def get_chat_history(
     user: UserGet = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
 ) -> list[MessageHistoryItem | EventHistoryItem]:
-    # ) -> None:
     return await service.get_chat_history(
         chat_id=chat_id,
         offset=offset,
