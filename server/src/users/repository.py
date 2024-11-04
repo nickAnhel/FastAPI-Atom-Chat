@@ -16,7 +16,11 @@ class UserRepository:
         self,
         data: dict[str, Any],
     ) -> UserModel:
-        stmt = insert(UserModel).values(**data).returning(UserModel)
+        stmt = (
+            insert(UserModel)
+            .values(**data)
+            .returning(UserModel)
+        )
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -62,7 +66,6 @@ class UserRepository:
         query = (
             select(UserModel)
             .where(
-                # UserModel.username.like(f'%{q}%'),
                 UserModel.username.bool_op("%")(q),
                 UserModel.user_id != user_id,
                 UserModel.is_deleted == False,
@@ -80,7 +83,11 @@ class UserRepository:
         self,
         **filters,
     ) -> list[ChatModel]:
-        query = select(UserModel).filter_by(**filters).options(selectinload(UserModel.joined_chats))
+        query = (
+            select(UserModel)
+            .filter_by(**filters)
+            .options(selectinload(UserModel.joined_chats))
+        )
         result = await self._session.execute(query)
         user = result.scalar_one()
         return user.joined_chats
@@ -90,7 +97,12 @@ class UserRepository:
         data: dict[str, Any],
         **filters,
     ) -> UserModel:
-        stmt = update(UserModel).values(**data).filter_by(**filters).returning(UserModel)
+        stmt = (
+            update(UserModel)
+            .values(**data)
+            .filter_by(**filters)
+            .returning(UserModel)
+        )
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -100,7 +112,12 @@ class UserRepository:
         self,
         **filters,
     ) -> UserModel:
-        stmt = update(UserModel).values(is_deleted=True).filter_by(**filters).returning(UserModel)
+        stmt = (
+            update(UserModel)
+            .values(is_deleted=True)
+            .filter_by(**filters)
+            .returning(UserModel)
+        )
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -110,7 +127,12 @@ class UserRepository:
         self,
         **filters,
     ) -> UserModel:
-        stmt = update(UserModel).values(is_deleted=False).filter_by(**filters).returning(UserModel)
+        stmt = (
+            update(UserModel)
+            .values(is_deleted=False)
+            .filter_by(**filters)
+            .returning(UserModel)
+        )
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -120,7 +142,12 @@ class UserRepository:
         self,
         **filters,
     ) -> UserModel:
-        stmt = update(UserModel).values(is_blocked=True).filter_by(**filters).returning(UserModel)
+        stmt = (
+            update(UserModel)
+            .values(is_blocked=True)
+            .filter_by(**filters)
+            .returning(UserModel)
+        )
 
         result = await self._session.execute(stmt)
         await self._session.commit()
@@ -130,18 +157,13 @@ class UserRepository:
         self,
         **filters,
     ) -> UserModel:
-        stmt = update(UserModel).values(is_blocked=False).filter_by(**filters).returning(UserModel)
+        stmt = (
+            update(UserModel)
+            .values(is_blocked=False)
+            .filter_by(**filters)
+            .returning(UserModel)
+        )
 
         result = await self._session.execute(stmt)
         await self._session.commit()
         return result.scalar_one()
-
-    async def delete(
-        self,
-        **filters,
-    ) -> int:
-        stmt = delete(UserModel).filter_by(**filters)
-
-        result = await self._session.execute(stmt)
-        await self._session.commit()
-        return result.rowcount

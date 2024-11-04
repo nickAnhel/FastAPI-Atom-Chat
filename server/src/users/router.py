@@ -127,11 +127,3 @@ async def unblock_user(
     service: UserService = Depends(get_users_service),
 ) -> UserGet:
     return await service.unblock_user(user_id=user_id)
-
-
-# @router.delete("/")
-# async def fully_delete_user(
-#     user: UserGet = Depends(),
-#     service: UserService = Depends(get_users_service),
-# ) -> bool:
-#     return await service.fully_delete_user(user_id=user.user_id)
