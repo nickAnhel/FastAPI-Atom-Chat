@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Test task for the Backend trainee developer vacancy in Rosatom"
 authors = ["nickAnhel <anhimovn1@gmail.com>"]
 license = "MIT"
-readme = "README.md"
+readme = "../README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
