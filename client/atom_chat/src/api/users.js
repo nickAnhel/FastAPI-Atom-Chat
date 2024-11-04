@@ -78,8 +78,8 @@ export async function restoreUser(username, password) {
         },
         body: `grand_type=password&username=${username}&password=${password}`,
     });
-    const result = await response.json();
-    return result;
+    // const result = await response.json();
+    return response;
 }
 
 

@@ -14,13 +14,15 @@ function Restore() {
 
     const restoreUserHandler = async (e) => {
         e.preventDefault();
-        const result = await restoreUser(username, password);
-        if (result?.detail) {
-            console.log(result);
-            setError(result.detail);
-        } else {
+        const res = await restoreUser(username, password);
+
+        if (res.status == 200) {
             await loginUser(username, password);
             navigate("/");
+        } else {
+            const result = await res.json();
+            console.error(result);
+            setError(result.detail);
         }
     }
 
