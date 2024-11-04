@@ -45,6 +45,9 @@ function Register() {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                         required
+                        maxLength={20}
+                        minLength={8}
+                        pattern="(?=.*\d)(?=.*[a-z]).{8,}"
                     />
                     {error && <div className="error">{error}</div>}
                     <button type="submit">Sign Up</button>

@@ -47,7 +47,7 @@ function Restore() {
                         required
                     />
                     {error && <div className="error">{error}</div>}
-                    <button type="submit">Sign Up</button>
+                    <button type="submit">Restore</button>
                 </form>
             </div>
         </>
