@@ -37,8 +37,8 @@ async def login(
     response.set_cookie(
         key=auth_settings.refresh_token_cookie_key,
         value=refresh_token,
-        # max_age=auth_settings.refresh_token_expire_minutes * 60,
-        # expires=auth_settings.refresh_token_expire_minutes * 60,
+        max_age=auth_settings.refresh_token_expire_minutes * 60,
+        expires=auth_settings.refresh_token_expire_minutes * 60,
         httponly=True,
         samesite="lax",
         secure=False,
