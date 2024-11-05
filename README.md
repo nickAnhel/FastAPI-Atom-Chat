@@ -7,7 +7,6 @@ To start a project, you need to have a number of installed programs and utilitie
 - `python3.12`
 - `docker` and `docker-compose`
 - `git`
-- `npm`
 # Local Launching
 To run a project on a local machine, follow the steps described below.
 
@@ -75,25 +74,15 @@ Windows
 
 Go back to the `server` directory and create the configuration files `.dev.env` and `.test.env` and fill them with your data guided by the files `.dev.env.example` and `.test.env.example`.
 
-Go to the `client/atom_chat` directory and install all frontend dependencies.
-
-```bash
-# Go to frontend dir
-cd client/atom_chat
-
-# Install all dependencies
-npm install
-```
-
 Go to the root directory of the project and start it using `docker`.
-
 ```bash
 # Run project
 docker compose up --build
 ```
+# Launching on Windows
+If you have an error in the `atom_chat_server` container and it says something like `Database '<your database name>' does not exists`, try to recreate the script `pg-scripts/create_dbs.sh` with the same content and restart the project.
 # Tests
 To run the tests, navigate to the `server` directory and execute the `pytest -v` command, specifying the `tests` directory.
-
 ```bash
 # Run tests in verbose mode
 pytest -v ./tests
