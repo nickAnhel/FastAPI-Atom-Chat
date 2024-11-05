@@ -32,7 +32,7 @@ source .venv/bin/activate
 Windows
 ```cmd
 # Create virtual env
-pyt -m venv .venv
+py -m venv .venv
 
 # Activate it
 .venv\Scripts\activate
