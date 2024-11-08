@@ -90,4 +90,4 @@ pytest -v ./tests
 # Filling with test data
 To run the script to fill the database with test data, navigate to the `api` directory and run the script `fill_db.py`.
 
-He will create three users `user1`, `user2` and `user3`, with the password `atom1234`. He will also create three chats `chat1`, `chat2` and `chat3`.
+It will create three users `user1`, `user2` and `user3`, with the password `atom1234`. It will also create three chats `chat1`, `chat2` and `chat3`.
