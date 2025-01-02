@@ -1,5 +1,5 @@
 # Atom Chat ⚛️
-![Atom Chat](https://raw.githubusercontent.com/nickAnhel/FastAPI-Atom-Chat/refs/heads/main/images/screen.png)
+![Atom Chat](https://raw.githubusercontent.com/nickAnhel/FastAPI-Atom-Chat/refs/heads/main/images/image.png)
 **Atom Chat** is a platform where users can chat in open or private chats. Users can create their own chats, either personal or shared, and join existing communities to exchange thoughts and ideas with people who share their interests.
 # Requirements
 To start a project, you need to have a number of installed programs and utilities:
